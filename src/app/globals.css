@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --rpg-dark: #0d0f12;
+  --rpg-panel: #151922;
+  --rpg-border: #2a3142;
+  --rpg-gold: #c9a227;
+  --rpg-accent: #4f9cf9;
+}
+
+body {
+  @apply bg-rpg-dark text-gray-100 antialiased;
+}
+
+/* Clique aqui: onde configurar coisas externas (ex.: API Keys) fica indicado no UI */
+@layer components {
+  .panel {
+    @apply rounded-lg border border-rpg-border bg-rpg-panel p-4 shadow-xl;
+  }
+  .btn-primary {
+    @apply rounded-lg bg-rpg-accent px-4 py-2 font-medium text-white transition hover:opacity-90;
+  }
+  .btn-secondary {
+    @apply rounded-lg border border-rpg-border bg-rpg-panel px-4 py-2 font-medium transition hover:border-rpg-muted;
+  }
+  .input-field {
+    @apply w-full rounded-lg border border-rpg-border bg-rpg-dark px-3 py-2 text-white placeholder-gray-500 focus:border-rpg-accent focus:outline-none focus:ring-1 focus:ring-rpg-accent;
+  }
+}

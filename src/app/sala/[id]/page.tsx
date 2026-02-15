@@ -1,0 +1,133 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, Swords } from "lucide-react";
+import { getCurrentUser } from "@/lib/auth";
+import { getRoomById } from "@/lib/rooms";
+import DashboardNav from "@/components/DashboardNav";
+import CampaignConfig from "@/components/CampaignConfig";
+import CharactersSection from "@/components/CharactersSection";
+import PreGameChecklist from "@/components/PreGameChecklist";
+import AiKeyConfig from "@/components/AiKeyConfig";
+import { RoomProvider, useRoom } from "@/context/RoomContext";
+import LobbySection from "@/components/LobbySection";
+import SyncPhase from "@/components/SyncPhase";
+import RefinementPhase from "@/components/RefinementPhase";
+import GameChat from "@/components/GameChat";
+
+export default function SalaPage() {
+  const params = useParams();
+  const router = useRouter();
+  const roomId = params.id as string;
+  const [user, setUser] = useState<ReturnType<typeof getCurrentUser>>(null);
+  const [room, setRoom] = useState<ReturnType<typeof getRoomById>>(undefined);
+
+  useEffect(() => {
+    const u = getCurrentUser();
+    setUser(u);
+    if (!u) {
+      router.replace("/");
+      return;
+    }
+    setRoom(getRoomById(roomId));
+  }, [roomId, router]);
+
+  const isHost = !!user && !!room && room.hostId === user.id;
+
+  if (!user) {
+    return (
+      <main className="min-h-screen flex items-center justify-center p-4">
+        <p className="text-rpg-muted">Redirecionando...</p>
+      </main>
+    );
+  }
+
+  if (!room) {
+    return (
+      <main className="min-h-screen bg-rpg-dark">
+        <DashboardNav />
+        <div className="mx-auto max-w-6xl px-4 py-8">
+          <p className="text-rpg-danger">Sala não encontrada.</p>
+          <Link href="/dashboard" className="btn-secondary mt-4 inline-flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao Dashboard
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-rpg-dark">
+      <DashboardNav />
+      <RoomProvider roomId={roomId} isHost={isHost}>
+        <SalaInner
+          roomId={roomId}
+          room={room}
+          isHost={isHost}
+        />
+      </RoomProvider>
+    </main>
+  );
+}
+
+function SalaInner({
+  roomId,
+  room,
+  isHost,
+}: {
+  roomId: string;
+  room: { code: string; name: string };
+  isHost: boolean;
+}) {
+  const { phase } = useRoom();
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <div className="mb-6 flex items-center justify-between">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 text-sm text-rpg-muted hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar às salas
+        </Link>
+        <span className="rounded bg-rpg-border px-3 py-1 font-mono text-sm text-rpg-gold">
+          Código: {room.code}
+        </span>
+      </div>
+
+      <h1 className="font-display text-3xl font-bold text-rpg-gold mb-2 flex items-center gap-2">
+        <Swords className="h-8 w-8" />
+        {room.name}
+      </h1>
+      <p className="text-rpg-muted mb-8">
+        {isHost ? "Você é o Host desta sala." : "Você entrou nesta sala como jogador."}
+      </p>
+
+      {phase === "lobby" && (
+        <>
+          <div className="space-y-6">
+            <LobbySection />
+            <PreGameChecklist roomId={roomId} isHost={isHost} />
+            <CampaignConfig roomId={roomId} isHost={isHost} />
+            <CharactersSection roomId={roomId} isHost={isHost} />
+            <AiKeyConfig isHost={isHost} />
+          </div>
+        </>
+      )}
+
+      {phase === "synchronizing" && <SyncPhase />}
+
+      {phase === "refinement" && <RefinementPhase />}
+
+      {phase === "playing" && (
+        <div className="space-y-6">
+          <GameChat />
+        </div>
+      )}
+    </div>
+  );
+}
