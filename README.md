@@ -1,17 +1,70 @@
 # Narrador — MVP RPG com IA
 
-Web App para narrar RPG de mesa auxiliado por IA. Protótipo com Next.js, Tailwind, Lucide React e armazenamento em LocalStorage.
+Web App para narrar RPG de mesa auxiliado por IA. **MVP com backend** usando Next.js, Express.js, MongoDB, Tailwind CSS e Lucide React.
 
-## Como rodar
+> **Phase 1 Status**: Workspace + Asset Upload infrastructure complete and ready for local testing.
 
+## 🚀 Quick Start (Phase 1)
+
+### Prerequisites
+- Node.js 18+
+- MongoDB running locally or via Docker
+- Git
+
+### Setup (3 minutes)
+
+**Option A: Automated (Unix/Mac)**
 ```bash
+chmod +x setup-phase1.sh
+./setup-phase1.sh
+```
+
+**Option B: Automated (Windows)**
+```bash
+setup-phase1.bat
+```
+
+**Option C: Manual**
+```bash
+# Frontend
 npm install
+npm run dev &
+
+# Backend (new terminal)
+cd backend
+npm install
+cp .env.example .env
 npm run dev
 ```
 
-Acesse [http://localhost:3000](http://localhost:3000).
+Then open [http://localhost:3000](http://localhost:3000)
 
-## Onde configurar coisas externas
+## 📚 Documentation
+
+- **Full Phase 1 Setup Guide**: See [PHASE_1_SETUP.md](PHASE_1_SETUP.md)
+- **Architecture & Expansion Plan**: See [EXPANSION_PLAN.md](EXPANSION_PLAN.md)
+- **AI Agent Instructions**: See [.github/copilot-instructions.md](.github/copilot-instructions.md)
+
+## 📋 Phase 1 Features
+
+✅ **User Authentication** - Register/login with JWT tokens  
+✅ **Workspace Management** - Personal workspace per narrator  
+✅ **Asset Upload** - Upload PDFs, images, rules documents  
+✅ **Asset Library** - Browse, organize, delete assets with tags  
+✅ **File Security** - MIME type validation, 100MB limit, user-isolated storage  
+✅ **Backend API** - Full REST API with Socket.io ready  
+✅ **MongoDB Integration** - Persistent data storage  
+
+## 🎯 What's Next (Phase 2+)
+
+- **RAG Integration**: LangChain.js + Vector DB (assets indexed for AI context)
+- **Combat Grid**: Konva.js canvas with token-based combat
+- **Co-Narrator AI**: Separate chat for campaign prep & rules questions
+- **Real-time Sync**: Socket.io multiplayer game state sync
+- **Cloud Storage**: Google Drive, Dropbox, AWS S3 integration
+- **Payment Tiers**: Subscription model with usage tracking
+
+## 🔑 Configurar APIs (Current MVP - Frontend Only)
 
 - **API Key (OpenAI ou Anthropic)**  
   No app: entre em uma **sala que você criou (Host)** → role até **"Configuração de IA (Host)"** → cole sua chave no campo e clique em **"Salvar no navegador"**.  
@@ -24,10 +77,86 @@ Acesse [http://localhost:3000](http://localhost:3000).
 - **Dados no navegador**  
   Para ver/limpar dados do app: DevTools (F12) → **Application** → **Local Storage** → `localhost:3000`. Chaves: `narrador_user`, `narrador_rooms`, `narrador_campaign`, `narrador_characters`, `narrador_ai_key`, `narrador_room_state`.
 
-## Estrutura de pastas
+## 📦 Estrutura de pastas
 
 ```
-src/
+src/                          # Frontend (Next.js)
+├── app/
+│   ├── page.tsx             # Login page
+│   ├── dashboard/           # Room list
+│   ├── workspace/           # Asset library (Phase 1)
+│   └── sala/[id]/          # Game room
+├── components/
+├── context/
+├── lib/
+└── app/globals.css
+
+backend/                      # Backend (Express.js)
+├── src/
+│   ├── config/
+│   │   └── database.ts
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   ├── utils/
+│   └── server.ts
+├── package.json
+└── .env.example
+```
+
+## 🏗️ Architecture (Phase 1)
+
+```
+Frontend (Next.js 14)
+  ↓
+  Workspace Page
+  ├─→ Asset Upload Modal
+  ├─→ Asset Grid Display
+  └─→ Asset Management (delete)
+  
+Backend (Express.js)
+  ↓
+  REST API
+  ├─→ POST /api/auth/register
+  ├─→ POST /api/auth/login
+  ├─→ POST /api/workspace/assets (multipart upload)
+  ├─→ GET /api/workspace/assets
+  └─→ DELETE /api/workspace/assets/:id
+  
+Database (MongoDB)
+  ├─→ User collection
+  ├─→ Workspace collection
+  └─→ WorkspaceAsset collection
+
+File Storage
+  └─→ /uploads/{userId}/{filename}
+```
+
+## 📊 Data Models (Phase 1)
+
+**User**
+- email (unique)
+- password (bcrypt hashed)
+- name
+- avatar (optional)
+
+**Workspace**
+- userId (indexed)
+- name
+- assets[] (references)
+- storageProvider (local_server | google_drive | aws_s3)
+
+**WorkspaceAsset**
+- workspaceId
+- userId (indexed)
+- type (adventure | bestiary | system | item | npc | map)
+- name, description, tags
+- fileName, filePath, fileSize
+- mimeType (validated)
+- uploadedAt
+
   app/              # Rotas (App Router)
     page.tsx        # Login
     layout.tsx      # Layout global

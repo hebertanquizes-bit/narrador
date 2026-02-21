@@ -29,7 +29,11 @@ export default function CharactersSection({ roomId, isHost }: Props) {
   const handleSimulateUpload = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !uploadedFileName.trim()) return;
-    addCharacter(roomId, user.id, user.name, uploadedFileName.trim());
+    const char = addCharacter(roomId, user.id, user.name, uploadedFileName.trim());
+    // Se o usuário é host, aprova automaticamente sua própria ficha
+    if (isHost) {
+      approveCharacter(char.id);
+    }
     setUploadedFileName("");
     refresh();
   };

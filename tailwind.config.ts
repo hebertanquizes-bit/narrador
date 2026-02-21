@@ -11,6 +11,7 @@ const config: Config = {
       colors: {
         rpg: {
           dark: "#0d0f12",
+          darker: "#0a0c0f",
           panel: "#151922",
           border: "#2a3142",
           muted: "#6b7280",

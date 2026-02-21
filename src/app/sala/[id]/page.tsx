@@ -94,9 +94,11 @@ function SalaInner({
           <ArrowLeft className="h-4 w-4" />
           Voltar às salas
         </Link>
-        <span className="rounded bg-rpg-border px-3 py-1 font-mono text-sm text-rpg-gold">
-          Código: {room.code}
-        </span>
+        {isHost && (
+          <span className="rounded bg-rpg-border px-3 py-1 font-mono text-sm text-rpg-gold">
+            Código: {room.code}
+          </span>
+        )}
       </div>
 
       <h1 className="font-display text-3xl font-bold text-rpg-gold mb-2 flex items-center gap-2">

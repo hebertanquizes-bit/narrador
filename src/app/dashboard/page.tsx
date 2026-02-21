@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, DoorOpen, Hash } from "lucide-react";
+import { Plus, DoorOpen, Hash, X, Trash2 } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import {
   getRooms,
   createRoom,
   findRoomByCode,
+  deleteRoom,
+  cleanupOldEmptyRooms,
 } from "@/lib/rooms";
 import DashboardNav from "@/components/DashboardNav";
 
@@ -18,6 +20,9 @@ export default function DashboardPage() {
   const [rooms, setRooms] = useState(getRooms());
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState("");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [roomName, setRoomName] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   useEffect(() => {
     const u = getCurrentUser();
@@ -26,13 +31,27 @@ export default function DashboardPage() {
       router.replace("/");
       return;
     }
+    // Limpeza automática de salas antigas
+    cleanupOldEmptyRooms();
     setRooms(getRooms());
   }, [router]);
 
+  const handleDeleteRoom = (roomId: string) => {
+    if (!user) return;
+    const success = deleteRoom(roomId, user.id);
+    if (success) {
+      setRooms(getRooms());
+      setDeleteConfirm(null);
+    }
+  };
+
   const handleCreateRoom = () => {
     if (!user) return;
-    const room = createRoom(user.id);
+    const finalName = roomName.trim() || "Nova Campanha";
+    const room = createRoom(user.id, finalName);
     setRooms(getRooms());
+    setShowCreateDialog(false);
+    setRoomName("");
     router.push(`/sala/${room.id}`);
     router.refresh();
   };
@@ -50,7 +69,6 @@ export default function DashboardPage() {
   };
 
   const myRooms = rooms.filter((r) => r.hostId === user?.id);
-  const otherRooms = rooms.filter((r) => r.hostId !== user?.id);
 
   if (!user) {
     return (
@@ -82,7 +100,7 @@ export default function DashboardPage() {
             </p>
             <button
               type="button"
-              onClick={handleCreateRoom}
+              onClick={() => setShowCreateDialog(true)}
               className="btn-primary flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
@@ -127,43 +145,120 @@ export default function DashboardPage() {
           ) : (
             <ul className="space-y-2">
               {myRooms.map((room) => (
-                <li key={room.id}>
+                <li key={room.id} className="panel flex items-center justify-between group hover:border-rpg-accent transition p-4">
                   <Link
                     href={`/sala/${room.id}`}
-                    className="panel flex items-center justify-between hover:border-rpg-accent transition"
+                    className="flex-1"
                   >
                     <span className="font-medium">{room.name}</span>
-                    <span className="rounded bg-rpg-border px-2 py-1 font-mono text-sm text-rpg-gold">
-                      {room.code}
-                    </span>
                   </Link>
+                  <button
+                    onClick={() => setDeleteConfirm(room.id)}
+                    className="ml-4 p-2 text-rpg-muted hover:text-rpg-danger hover:bg-rpg-danger/10 rounded transition opacity-0 group-hover:opacity-100"
+                    title="Excluir sala"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        {otherRooms.length > 0 && (
-          <section className="mt-8">
-            <h2 className="font-display text-xl font-bold text-gray-200 mb-4">
-              Outras salas
-            </h2>
-            <ul className="space-y-2">
-              {otherRooms.map((room) => (
-                <li key={room.id}>
-                  <Link
-                    href={`/sala/${room.id}`}
-                    className="panel flex items-center justify-between hover:border-rpg-accent transition"
+        {/* Modal de criar sala */}
+        {showCreateDialog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="rounded-lg bg-rpg-darker border border-rpg-border p-6 max-w-md w-full">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-rpg-gold">Criar Nova Sala</h3>
+                <button
+                  onClick={() => {
+                    setShowCreateDialog(false);
+                    setRoomName("");
+                  }}
+                  className="text-rpg-muted hover:text-rpg-light transition"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-rpg-light mb-2">
+                    Nome da Sala
+                  </label>
+                  <input
+                    type="text"
+                    value={roomName}
+                    onChange={(e) => setRoomName(e.target.value)}
+                    placeholder="Ex: Aventura das Ruínas Perdidas"
+                    maxLength={100}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        handleCreateRoom();
+                      }
+                    }}
+                    className="input-field w-full"
+                    autoFocus
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowCreateDialog(false);
+                      setRoomName("");
+                    }}
+                    className="btn-secondary flex-1"
                   >
-                    <span className="font-medium">{room.name}</span>
-                    <span className="rounded bg-rpg-border px-2 py-1 font-mono text-sm text-rpg-gold">
-                      {room.code}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleCreateRoom}
+                    className="btn-primary flex-1 flex items-center justify-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Criar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de confirmação de exclusão */}
+        {deleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="rounded-lg bg-rpg-darker border border-rpg-border p-6 max-w-md w-full">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-rpg-danger">Excluir Sala</h3>
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="text-rpg-muted hover:text-rpg-light transition"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="text-rpg-light mb-6">
+                Tem certeza que deseja excluir esta sala? Esta ação não pode ser desfeita e removerá todos os dados associados.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="btn-secondary flex-1"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    handleDeleteRoom(deleteConfirm);
+                  }}
+                  className="btn-danger flex-1 flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Excluir
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </main>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { Check, Circle } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getRoomById } from "@/lib/rooms";
 import { getApprovedCharacters } from "@/lib/characters";
 import { hasAiKeyConfigured } from "@/lib/ai-key";
+import { useRoom } from "@/context/RoomContext";
 
 type Props = { roomId: string; isHost: boolean };
 
@@ -19,8 +20,14 @@ const steps = [
 export default function PreGameChecklist({ roomId, isHost }: Props) {
   const user = getCurrentUser();
   const room = useMemo(() => getRoomById(roomId), [roomId]);
-  const approved = useMemo(() => getApprovedCharacters(roomId), [roomId]);
+  const [approved, setApproved] = useState(() => getApprovedCharacters(roomId));
   const aiConfigured = useMemo(() => hasAiKeyConfigured(), []);
+  const { checklist: contextChecklist } = useRoom();
+
+  // Refetch approved characters quando o contexto invalidar checklist
+  useEffect(() => {
+    setApproved(getApprovedCharacters(roomId));
+  }, [roomId, contextChecklist]);
 
   const stepStatus = useMemo(() => {
     const authOk = !!user;

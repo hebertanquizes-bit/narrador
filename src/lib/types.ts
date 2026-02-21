@@ -3,6 +3,8 @@ export type User = {
   email: string;
   name: string;
   provider: "email" | "google";
+  token?: string;
+  avatar?: string;
 };
 
 export type Room = {

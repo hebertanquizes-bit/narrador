@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, LayoutDashboard, Swords } from "lucide-react";
+import { LogOut, LayoutDashboard, Swords, Library } from "lucide-react";
 import { getCurrentUser, logout } from "@/lib/auth";
 
 export default function DashboardNav() {
@@ -32,6 +32,13 @@ export default function DashboardNav() {
           >
             <LayoutDashboard className="h-4 w-4" />
             Salas
+          </Link>
+          <Link
+            href="/workspace"
+            className="flex items-center gap-2 text-sm text-gray-300 hover:text-white"
+          >
+            <Library className="h-4 w-4" />
+            Workspace
           </Link>
           {user && (
             <span className="text-sm text-rpg-muted">

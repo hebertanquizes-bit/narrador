@@ -4,10 +4,12 @@
 
 :root {
   --rpg-dark: #0d0f12;
+  --rpg-darker: #0a0c0f;
   --rpg-panel: #151922;
   --rpg-border: #2a3142;
   --rpg-gold: #c9a227;
   --rpg-accent: #4f9cf9;
+  --rpg-danger: #e74c3c;
 }
 
 body {
@@ -24,6 +26,9 @@ body {
   }
   .btn-secondary {
     @apply rounded-lg border border-rpg-border bg-rpg-panel px-4 py-2 font-medium transition hover:border-rpg-muted;
+  }
+  .btn-danger {
+    @apply rounded-lg bg-rpg-danger px-4 py-2 font-medium text-white transition hover:opacity-90;
   }
   .input-field {
     @apply w-full rounded-lg border border-rpg-border bg-rpg-dark px-3 py-2 text-white placeholder-gray-500 focus:border-rpg-accent focus:outline-none focus:ring-1 focus:ring-rpg-accent;
