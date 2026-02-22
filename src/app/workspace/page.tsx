@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Upload, Trash2, BookOpen, Image, FileText, Wand2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 interface Asset {
   _id: string;
@@ -57,15 +58,25 @@ export default function WorkspacePage() {
   const [newAssetDesc, setNewAssetDesc] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+  const { user, isNarrator, isPlayer, loading: authLoading } = useAuth();
+
   // Fetch workspace and assets on mount
   useEffect(() => {
-    const userStr = localStorage.getItem('narrador_user');
-    if (!userStr) {
+    // Wait for auth context to be fully loaded
+    if (authLoading) return;
+
+    if (!user) {
       router.push('/');
       return;
     }
 
-    const user = JSON.parse(userStr);
+    // Role Guard inside Workspace
+    if (!user.role) {
+      router.push('/workspace/selecionar');
+      return;
+    }
+
+    // TODO: This uses old localStorage logic that we will migrate to Supabase in the next steps!
     const workspaceKey = `narrador_workspace_${user.id}`;
 
     // Load workspace from localStorage
@@ -98,7 +109,7 @@ export default function WorkspacePage() {
     }, 500);
 
     return () => clearInterval(syncInterval);
-  }, [router]);
+  }, [router, user, authLoading]);
 
   const initWorkspace = (userId: string) => {
     const user = JSON.parse(localStorage.getItem('narrador_user') || '{}');
