@@ -15,6 +15,7 @@ export { createClient, getSupabaseClient } from './client'
 // Auth helpers (client-side)
 export {
     getAuthUser,
+    fetchCurrentAuthUser,
     loginWithEmail,
     registerWithEmail,
     loginWithGoogle,
@@ -23,6 +24,7 @@ export {
     onAuthStateChange,
     updateProfile,
     chooseWorkspaceType,
+    ensurePlayerRole,
 } from './auth'
 
 // Types

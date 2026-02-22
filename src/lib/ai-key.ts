@@ -3,7 +3,6 @@
 import { STORAGE_KEYS, getItem, setItem, removeItem } from "./storage";
 import type { AiProviderId } from "./ai-providers";
 import {
-  getProvider,
   getDefaultModelForProvider,
   getModelsForProvider,
 } from "./ai-providers";

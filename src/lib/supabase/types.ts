@@ -13,37 +13,37 @@ export type Database = {
                 Row: Profile
                 Insert: Omit<Profile, 'created_at' | 'updated_at'>
                 Update: Partial<Omit<Profile, 'id' | 'created_at'>>
-                Relationships: any[]
+                Relationships: unknown[]
             }
             player_workspaces: {
                 Row: PlayerWorkspace
                 Insert: Omit<PlayerWorkspace, 'id' | 'created_at' | 'updated_at'>
                 Update: Partial<Omit<PlayerWorkspace, 'id' | 'user_id' | 'created_at'>>
-                Relationships: any[]
+                Relationships: unknown[]
             }
             narrator_workspaces: {
                 Row: NarratorWorkspace
                 Insert: Omit<NarratorWorkspace, 'id' | 'created_at' | 'updated_at'>
                 Update: Partial<Omit<NarratorWorkspace, 'id' | 'user_id' | 'created_at'>>
-                Relationships: any[]
+                Relationships: unknown[]
             }
             rooms: {
                 Row: Room
                 Insert: Omit<Room, 'id' | 'code' | 'created_at' | 'updated_at'>
                 Update: Partial<Omit<Room, 'id' | 'owner_id' | 'created_at'>>
-                Relationships: any[]
+                Relationships: unknown[]
             }
             room_participants: {
                 Row: RoomParticipant
                 Insert: Omit<RoomParticipant, 'id' | 'joined_at'>
                 Update: Partial<Pick<RoomParticipant, 'is_ready'>>
-                Relationships: any[]
+                Relationships: unknown[]
             }
             rpg_systems: {
                 Row: RpgSystem
                 Insert: Omit<RpgSystem, 'created_at'>
                 Update: Partial<Omit<RpgSystem, 'id' | 'created_at'>>
-                Relationships: any[]
+                Relationships: unknown[]
             }
         }
         Views: Record<string, never>

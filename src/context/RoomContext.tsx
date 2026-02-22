@@ -13,7 +13,6 @@ import { getCampaignConfig } from "@/lib/campaign";
 import { getApprovedCharacters } from "@/lib/characters";
 import {
   getRoomState,
-  setRoomState,
   addParticipant,
   setParticipantReady,
   addSimulatedParticipant,
@@ -37,6 +36,7 @@ import type {
   GameMessage,
   MessageKind,
 } from "@/lib/types";
+import type { AuthUser } from "@/lib/supabase/types";
 
 type Checklist = {
   backendOk: boolean;
@@ -48,7 +48,7 @@ type Checklist = {
 type RoomContextValue = {
   roomId: string;
   isHost: boolean;
-  currentUser: any;
+  currentUser: AuthUser | null;
   participants: Participant[];
   ready: Record<string, boolean>;
   phase: RoomPhase;
@@ -162,7 +162,6 @@ export function RoomProvider({ roomId, isHost, children }: RoomProviderProps) {
       state.participants.every((p) => state.ready[p.userId] === true);
     return { backendOk, campaignLoaded, charactersValid, playersReady };
   }, [
-    checklistTick,
     campaignConfig,
     approvedChars.length,
     state.participants,
@@ -268,7 +267,7 @@ export function RoomProvider({ roomId, isHost, children }: RoomProviderProps) {
     return currentUser?.id === currentId
       ? `Em turno do Jogador [${name}]`
       : `Aguardando [${name}]...`;
-  }, [isAiProcessing, state.currentTurnPlayerId, state.participants, currentUser?.id]);
+  }, [isAiProcessing, state.currentTurnPlayerId, state.participants, currentUser]);
 
   const getNextPlayerId = useCallback(
     (participantsList: Participant[], currentTurnId: string | null) => {

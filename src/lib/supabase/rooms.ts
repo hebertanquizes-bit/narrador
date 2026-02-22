@@ -28,23 +28,23 @@ export async function getRooms(): Promise<Room[]> {
  * tiver um Workspace (role === narrator).
  */
 export async function createRoom(hostId: string, name: string = "Nova Campanha"): Promise<Room | null> {
+    const roomData = {
+        owner_id: hostId,
+        state: "lobby",
+        enabled_features: { dice: true, aiChat: false, music: false, grid: false },
+        campaign_config: {
+            roomName: name,
+            campaignName: "Campanha RPG",
+            systemId: null,
+            mapUrl: null,
+            gridEnabled: false,
+            password: null
+        }
+    }
+
     const { data, error } = await supabase
         .from("rooms")
-        .insert([
-            {
-                owner_id: hostId,
-                state: "lobby",
-                enabled_features: { dice: true, aiChat: false, music: false, grid: false },
-                campaign_config: {
-                    roomName: name,
-                    campaignName: "Campanha RPG",
-                    systemId: null,
-                    mapUrl: null,
-                    gridEnabled: false,
-                    password: null
-                }
-            }
-        ])
+        .insert([roomData as never])
         .select()
         .single();
 

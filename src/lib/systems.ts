@@ -1,6 +1,7 @@
 "use client";
 
 import { STORAGE_KEYS, getItem, setItem } from "./storage";
+// Importa os tipos de src/lib/types.ts (não do supabase/types.ts)
 import type { GameSystem, SystemTemplate } from "./types";
 
 /**
@@ -158,15 +159,19 @@ export function parseSystemFromJSON(data: unknown): SystemTemplate {
     throw new Error("Invalid system JSON");
   }
 
-  const obj = data as any;
+  const obj = data as Record<string, unknown>;
   return {
-    id: obj.id || `custom-${Date.now()}`,
-    name: obj.name || "Custom System",
-    version: obj.version || "1.0",
+    id: (obj.id as string) || `custom-${Date.now()}`,
+    name: (obj.name as string) || "Custom System",
+    version: (obj.version as string) || "1.0",
     isBuiltIn: false,
-    attributes: obj.attributes || [],
-    skills: obj.skills || [],
-    spellLevels: obj.spellLevels || [],
-    combatRules: obj.combatRules || {},
+    attributes: (obj.attributes as string[]) || [],
+    skills: (obj.skills as string[]) || [],
+    spellLevels: (obj.spellLevels as number[]) || [],
+    combatRules: (obj.combatRules as SystemTemplate["combatRules"]) || {
+      initiativeFormula: "",
+      actionEconomy: "",
+      armorClasses: [],
+    },
   };
 }

@@ -25,7 +25,6 @@ export async function middleware(request: NextRequest) {
   const { data, error } = await supabase.auth.getUser()
   const user = data.user
 
-  console.log('[Middleware] User:', user)
   if (error) console.log('[Middleware] Error getting user:', error.message)
 
   const pathname = request.nextUrl.pathname
@@ -34,6 +33,7 @@ export async function middleware(request: NextRequest) {
   const publicRoutes = ['/', '/auth/callback', '/auth/confirm']
   if (publicRoutes.includes(pathname)) {
     if (user && pathname === '/') {
+      // Usuário logado tentando acessar a tela de login → redirecionar
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
     return supabaseResponse
@@ -48,24 +48,35 @@ export async function middleware(request: NextRequest) {
   }
 
   // ─── Pegar role do usuário ─────────
-  const { data: profile, error: profileError } = await supabase
+  const { data: profileData, error: profileError } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
 
-  const role = profile?.role
+  // Cast explícito para evitar inferência `never` em versões antigas do compilador
+  const profile = profileData as { role: 'player' | 'narrator' | null } | null
+  const role = profile?.role ?? null
+
   if (profileError) console.log('[Middleware] Error fetching profile:', profileError.message)
 
-  console.log('[Middleware] Role:', role)
+  console.log('[Middleware] User:', user.id, 'Role:', role, 'Path:', pathname)
+
+  // ─── Permitir acesso à página de seleção de workspace sempre ─────────
+  // (Necessário para troca de papel dentro do workspace)
+  if (pathname === '/workspace/selecionar') {
+    return supabaseResponse
+  }
 
   // ─── Redirecionar se ainda não escolheu role ─────────
-  if (!role && pathname !== '/workspace/selecionar') {
+  // Novos usuários sem role são raros agora (registerWithEmail define player por padrão)
+  // mas mantemos como fallback
+  if (!role) {
     console.log('[Middleware] No role, redirecting to /workspace/selecionar')
     return NextResponse.redirect(new URL('/workspace/selecionar', request.url))
   }
 
-  // ─── Jogadores não podem acessar áreas de narrador ─────────
+  // ─── Jogadores não podem acessar áreas exclusivas de narrador ─────────
   if (role === 'player') {
     const narratorOnlyPaths = ['/workspace/narrador', '/sala/criar']
     const isNarratorOnly = narratorOnlyPaths.some(p => pathname.startsWith(p))

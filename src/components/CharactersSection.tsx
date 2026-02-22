@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Upload, UserPlus, Check, Clock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -20,11 +20,11 @@ export default function CharactersSection({ roomId, isHost }: Props) {
   const [uploadedFileName, setUploadedFileName] = useState("");
   const { user } = useAuth();
 
-  const refresh = () => {
+  const refresh = useCallback(() => {
     setCharacters(getCharacters(roomId));
     setPending(getPendingCharacters(roomId));
     invalidateChecklist();
-  };
+  }, [roomId, invalidateChecklist]);
 
   const handleSimulateUpload = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +45,7 @@ export default function CharactersSection({ roomId, isHost }: Props) {
 
   useEffect(() => {
     refresh();
-  }, [roomId]);
+  }, [refresh]);
 
   return (
     <div className="panel">

@@ -32,11 +32,14 @@ export async function fetchCurrentAuthUser(): Promise<AuthUser | null> {
 }
 
 async function fetchProfileForUser(userId: string, email: string | undefined): Promise<AuthUser | null> {
-    const { data: profile } = await supabase
+    const { data } = await supabase
         .from('profiles')
         .select('display_name, avatar_url, role')
         .eq('id', userId)
         .single()
+
+    // Cast explícito para evitar inferência `never` em alguns compiladores
+    const profile = data as Pick<Profile, 'display_name' | 'avatar_url' | 'role'> | null
 
     return {
         id: userId,
@@ -58,6 +61,7 @@ export async function loginWithEmail(email: string, password: string) {
 
 /**
  * Registro com email e senha.
+ * Novos usuários são automaticamente definidos como `player`.
  */
 export async function registerWithEmail(email: string, password: string, name: string) {
     const { data, error } = await supabase.auth.signUp({
@@ -70,7 +74,39 @@ export async function registerWithEmail(email: string, password: string, name: s
         },
     })
     if (error) throw new Error(error.message)
+
+    // Se o usuário foi criado, definir automaticamente como player
+    if (data.user) {
+        try {
+            await ensurePlayerRole(data.user.id)
+        } catch (e) {
+            // Não bloqueia o registro se falhar (trigger pode já ter criado)
+            console.warn('Aviso ao definir role inicial:', e)
+        }
+    }
+
     return data.user
+}
+
+/**
+ * Garante que o usuário tem o role `player` caso não tenha role definido ainda.
+ * Chamado após registro para simplificar o onboarding.
+ */
+export async function ensurePlayerRole(userId: string): Promise<void> {
+    // Verificar se já tem role
+    const { data } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single()
+
+    const profile = data as Pick<Profile, 'role'> | null
+
+    // Se já tem role, não fazer nada
+    if (profile?.role) return
+
+    // Definir como player (padrão)
+    await chooseWorkspaceType(userId, 'player')
 }
 
 /**
@@ -122,7 +158,7 @@ export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
 
         try {
             const user = session.user
-            const { data: profile, error } = await supabase
+            const { data, error } = await supabase
                 .from('profiles')
                 .select('display_name, avatar_url, role')
                 .eq('id', user.id)
@@ -131,6 +167,9 @@ export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
             if (error && error.code !== 'PGRST116') {
                 console.error("Erro no AuthState profile fetch:", error)
             }
+
+            // Cast explícito para evitar inferência `never`
+            const profile = data as Pick<Profile, 'display_name' | 'avatar_url' | 'role'> | null
 
             callback({
                 id: user.id,
@@ -164,17 +203,17 @@ export async function updateProfile(userId: string, data: Partial<Pick<Profile, 
 
 /**
  * Define o role do usuário e cria o workspace correspondente.
- * Esta ação é PERMANENTE — role não pode ser alterado depois.
+ * Pode ser chamado múltiplas vezes para trocar de papel.
  */
 export async function chooseWorkspaceType(userId: string, role: 'player' | 'narrator') {
     // 1. Definir o role
     await updateProfile(userId, { role })
 
-    // 2. Criar o workspace correspondente
+    // 2. Criar o workspace correspondente (ignora conflito se já existe)
     if (role === 'player') {
         const { error } = await supabase
             .from('player_workspaces')
-            .insert({ user_id: userId, tokens: [], character_sheets: [] })
+            .insert({ user_id: userId, tokens: [], character_sheets: [] } as never)
 
         if (error && error.code !== '23505') { // ignorar conflito (já existe)
             throw new Error(`Erro ao criar workspace de jogador: ${error.message}`)
@@ -192,7 +231,7 @@ export async function chooseWorkspaceType(userId: string, role: 'player' | 'narr
                     imageGen: false,
                 },
                 assets: [],
-            })
+            } as never)
 
         if (error && error.code !== '23505') {
             throw new Error(`Erro ao criar workspace de narrador: ${error.message}`)

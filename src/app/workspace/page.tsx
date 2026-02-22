@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Upload, Trash2, BookOpen, Image, FileText, Wand2 } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, BookOpen, ImageIcon, FileText, Wand2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 interface Asset {
@@ -39,15 +39,14 @@ const ASSET_TYPE_ICONS: { [key: string]: React.ReactNode } = {
   bestiary: <Wand2 className="w-4 h-4" />,
   system: <FileText className="w-4 h-4" />,
   item: <BookOpen className="w-4 h-4" />,
-  npc: <Image className="w-4 h-4" />,
-  map: <Image className="w-4 h-4" />,
+  npc: <ImageIcon className="w-4 h-4" />,
+  map: <ImageIcon className="w-4 h-4" />,
 };
 
 export default function WorkspacePage() {
   const router = useRouter();
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -171,9 +170,7 @@ export default function WorkspacePage() {
 
       // Create a FileReader to convert file to base64
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const fileContent = e.target?.result as string;
-
+      reader.onload = () => {
         // Create new asset object
         const newAsset: Asset = {
           _id: 'asset_' + Date.now(),
@@ -281,7 +278,7 @@ export default function WorkspacePage() {
     setDeleteAssetId(null);
   };
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-rpg-dark flex items-center justify-center">
         <div className="text-center">
@@ -322,8 +319,8 @@ export default function WorkspacePage() {
             {/* Papel atual + botão Trocar — único local onde isso é permitido */}
             <div className="flex items-center gap-2">
               <span className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded-full border font-medium ${isNarrator
-                  ? 'border-purple-500/50 bg-purple-900/20 text-purple-300'
-                  : 'border-blue-500/50 bg-blue-900/20 text-blue-300'
+                ? 'border-purple-500/50 bg-purple-900/20 text-purple-300'
+                : 'border-blue-500/50 bg-blue-900/20 text-blue-300'
                 }`}>
                 <Wand2 className="w-3 h-3" />
                 {isNarrator ? 'Narrador' : 'Jogador'}

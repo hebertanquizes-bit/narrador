@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Konva from 'konva';
 import { Stage, Layer, Rect, Circle, Text, Group, Line } from 'react-konva';
 import { Plus, Minus, RotateCcw } from 'lucide-react';
@@ -17,14 +17,12 @@ interface Token {
 interface CombatGridProps {
   tokens: Token[];
   onTokenMove: (id: string, x: number, y: number) => void;
-  onTokenAdd?: (name: string, color: string) => void;
   readOnly?: boolean;
 }
 
 export function CombatGrid({
   tokens,
   onTokenMove,
-  onTokenAdd,
   readOnly = false,
 }: CombatGridProps) {
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null);
@@ -37,21 +35,21 @@ export function CombatGrid({
   const GRID_HEIGHT = GRID_SIZE * CELL_SIZE;
 
   // Handle token drag
-  const handleTokenDragEnd = (tokenId: string, e: any) => {
+  const handleTokenDragEnd = (tokenId: string, e: { target: { x: () => number; y: () => number } }) => {
     if (readOnly) return;
-    
+
     const newX = Math.round(e.target.x() / CELL_SIZE) * CELL_SIZE;
     const newY = Math.round(e.target.y() / CELL_SIZE) * CELL_SIZE;
-    
+
     // Clamp to grid
     const clampedX = Math.max(0, Math.min(newX, GRID_WIDTH - CELL_SIZE));
     const clampedY = Math.max(0, Math.min(newY, GRID_HEIGHT - CELL_SIZE));
-    
+
     onTokenMove(tokenId, clampedX, clampedY);
   };
 
   // Handle wheel zoom
-  const handleWheel = (e: any) => {
+  const handleWheel = (e: { evt: WheelEvent }) => {
     e.evt.preventDefault();
     if (!stageRef.current) return;
 
@@ -189,28 +187,3 @@ export function CombatGrid({
   );
 }
 
-// Helper Line component for grid
-function GridLine({
-  x,
-  y,
-  points,
-  stroke,
-  strokeWidth,
-}: {
-  x: number;
-  y: number;
-  points: number[];
-  stroke: string;
-  strokeWidth: number;
-}) {
-  return (
-    <Line
-      x={x}
-      y={y}
-      points={points}
-      stroke={stroke}
-      strokeWidth={strokeWidth}
-      listening={false}
-    />
-  );
-}

@@ -5,21 +5,19 @@ import { Send, Swords, MessageCircle, Users, Loader2, Flag } from "lucide-react"
 import { useRoom } from "@/context/RoomContext";
 import type { GameMessage } from "@/lib/types";
 
-function MessageBubble({ msg, isNarrative, isConsult, isFromMe, senderName }: {
+function MessageBubble({ msg, isNarrative, isFromMe, senderName }: {
   msg: GameMessage;
   isNarrative: boolean;
-  isConsult: boolean;
   isFromMe: boolean;
   senderName?: string;
 }) {
   if (msg.from === "ai") {
     return (
       <div
-        className={`rounded-lg p-4 ${
-          isNarrative
+        className={`rounded-lg p-4 ${isNarrative
             ? "bg-rpg-gold/10 border border-rpg-gold/30 text-amber-100"
             : "bg-rpg-accent/10 border border-rpg-accent/30 text-blue-100"
-        }`}
+          }`}
       >
         <p className="text-xs font-medium text-rpg-muted mb-1">
           {isNarrative ? "Narração" : "IA (resposta à dúvida)"}
@@ -45,11 +43,10 @@ function MessageBubble({ msg, isNarrative, isConsult, isFromMe, senderName }: {
 
   return (
     <div
-      className={`rounded-lg p-3 ${
-        isFromMe
+      className={`rounded-lg p-3 ${isFromMe
           ? "ml-auto max-w-[85%] bg-rpg-accent/20 border border-rpg-accent/30"
           : "mr-auto max-w-[85%] bg-rpg-panel border border-rpg-border"
-      }`}
+        }`}
     >
       <p className="text-xs font-medium text-rpg-muted mb-1">
         {kindLabel}
@@ -125,9 +122,8 @@ export default function GameChat() {
           )}
           {!isAiProcessing && (
             <span
-              className={`rounded px-2 py-1 text-sm ${
-                isMyTurn ? "bg-rpg-gold/20 text-rpg-gold" : "bg-rpg-border text-rpg-muted"
-              }`}
+              className={`rounded px-2 py-1 text-sm ${isMyTurn ? "bg-rpg-gold/20 text-rpg-gold" : "bg-rpg-border text-rpg-muted"
+                }`}
             >
               {turnStatusLabel}
             </span>
@@ -144,7 +140,6 @@ export default function GameChat() {
               key={msg.id}
               msg={msg}
               isNarrative={msg.kind === "narrative"}
-              isConsult={msg.kind === "consult" || (msg.from === "ai" && msg.kind !== "narrative")}
               isFromMe={currentUser?.id === msg.from}
               senderName={msg.from !== "ai" ? getSenderName(msg.from) : undefined}
             />
@@ -166,11 +161,10 @@ export default function GameChat() {
               type="button"
               onClick={() => setMode(id)}
               disabled={isInputDisabled}
-              className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
-                mode === id
+              className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${mode === id
                   ? "border-rpg-accent bg-rpg-accent/20 text-white"
                   : "border-rpg-border text-rpg-muted hover:border-rpg-muted disabled:opacity-50 disabled:cursor-not-allowed"
-              }`}
+                }`}
             >
               <Icon className="h-4 w-4" />
               {label}
@@ -229,11 +223,10 @@ export default function GameChat() {
                 key={p.userId}
                 type="button"
                 onClick={() => passTurnToNextPlayer(p.userId)}
-                className={`rounded border px-2 py-1 text-xs transition ${
-                  currentTurnPlayerId === p.userId
+                className={`rounded border px-2 py-1 text-xs transition ${currentTurnPlayerId === p.userId
                     ? "border-rpg-gold bg-rpg-gold/20 text-rpg-gold"
                     : "border-rpg-border text-rpg-muted hover:border-rpg-muted"
-                }`}
+                  }`}
               >
                 {p.name}
               </button>

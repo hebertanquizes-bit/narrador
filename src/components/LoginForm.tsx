@@ -4,6 +4,12 @@ import { useState } from "react";
 import { Mail, Lock, LogIn, UserPlus, AlertCircle } from "lucide-react";
 import { loginWithEmail, loginWithGoogle, registerWithEmail } from "@/lib/supabase/auth";
 
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  return "Erro desconhecido";
+}
+
 export default function LoginForm() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState("");
@@ -45,12 +51,14 @@ export default function LoginForm() {
         }
 
         // Registrar novo usuário
+        // registerWithEmail já define o role como 'player' automaticamente
         try {
           await registerWithEmail(email, password, email.split("@")[0]);
           // Hard redirect: middleware relê sessão fresca e redireciona corretamente
+          // Como novo usuário já tem role=player, vai direto para o dashboard
           window.location.href = '/dashboard';
-        } catch (err: any) {
-          const errorMsg = (err.message || "").toLowerCase();
+        } catch (err: unknown) {
+          const errorMsg = getErrorMessage(err).toLowerCase();
           if (errorMsg.includes("user already registered") || errorMsg.includes("already registered")) {
             setError("Este email já possui uma conta. Tente fazer login.");
           } else if (errorMsg.includes("signup") || errorMsg.includes("sign up") || errorMsg.includes("disabled")) {
@@ -58,7 +66,7 @@ export default function LoginForm() {
           } else if (errorMsg.includes("password") || errorMsg.includes("weak")) {
             setError("Senha muito fraca. Use ao menos 6 caracteres com letras e números.");
           } else {
-            setError(err.message || "Erro ao criar conta");
+            setError(getErrorMessage(err) || "Erro ao criar conta");
           }
           setLoading(false);
         }
@@ -72,9 +80,13 @@ export default function LoginForm() {
 
         try {
           await loginWithEmail(email, password);
+          // Hard redirect para garantir que o middleware releia os cookies com sessão fresca
+          // O middleware verificará o role e redirecionará adequadamente:
+          // - role=player ou role=narrator → /dashboard
+          // - sem role → /workspace/selecionar (não deve ocorrer em usuários novos)
           window.location.href = '/dashboard';
-        } catch (err: any) {
-          const errorMsg = err.message || "Erro ao fazer login";
+        } catch (err: unknown) {
+          const errorMsg = getErrorMessage(err);
 
           // Supabase retorna mensagens em inglês
           if (
@@ -92,8 +104,8 @@ export default function LoginForm() {
           setLoading(false);
         }
       }
-    } catch (err: any) {
-      setError(err.message || "Erro ao processar");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || "Erro ao processar");
       setLoading(false);
     }
   };
@@ -104,8 +116,8 @@ export default function LoginForm() {
     try {
       await loginWithGoogle();
       // Google OAuth redireciona via callback, sem necessidade de redirecionamento manual
-    } catch (err: any) {
-      setError(err.message || "Erro ao fazer login com Google");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || "Erro ao fazer login com Google");
       setLoading(false);
     }
   };
@@ -207,6 +219,15 @@ export default function LoginForm() {
           </div>
         )}
 
+        {/* Aviso de role para novos usuários */}
+        {isRegistering && (
+          <div className="text-xs text-rpg-muted bg-blue-900/10 border border-blue-500/20 rounded p-3">
+            <span className="text-blue-300 font-medium">ℹ️ Novo usuário</span>
+            <br />
+            Você começará como <strong className="text-blue-200">Jogador</strong>. Para se tornar Narrador, acesse o Workspace após entrar.
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={loading}
@@ -215,12 +236,12 @@ export default function LoginForm() {
           {isRegistering ? (
             <>
               <UserPlus className="h-4 w-4" />
-              Criar Conta
+              {loading ? "Criando conta..." : "Criar Conta"}
             </>
           ) : (
             <>
               <LogIn className="h-4 w-4" />
-              Entrar
+              {loading ? "Entrando..." : "Entrar"}
             </>
           )}
         </button>

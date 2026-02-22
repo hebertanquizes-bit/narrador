@@ -1,7 +1,6 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useRoom } from "@/context/RoomContext";
 
 export default function SyncPhase() {
   return (

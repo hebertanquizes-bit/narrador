@@ -41,7 +41,7 @@ export function CoNarratorChat({
         if (res.ok) {
           const data = await res.json();
           setMessages(
-            data.history.map((msg: any) => ({
+            data.history.map((msg: { role: 'narrator' | 'user'; content: string; timestamp: string }) => ({
               ...msg,
               timestamp: new Date(msg.timestamp),
             }))
@@ -79,7 +79,7 @@ export function CoNarratorChat({
       if (res.ok) {
         const data = await res.json();
         setMessages(
-          data.history.map((msg: any) => ({
+          data.history.map((msg: { role: 'narrator' | 'user'; content: string; timestamp: string }) => ({
             ...msg,
             timestamp: new Date(msg.timestamp),
           }))
@@ -148,8 +148,8 @@ export function CoNarratorChat({
           >
             <div
               className={`max-w-xs px-4 py-2 rounded ${msg.role === 'user'
-                  ? 'bg-rpg-accent text-rpg-dark'
-                  : 'bg-rpg-darker border border-rpg-gold text-rpg-light'
+                ? 'bg-rpg-accent text-rpg-dark'
+                : 'bg-rpg-darker border border-rpg-gold text-rpg-light'
                 }`}
             >
               <p className="text-sm">{msg.content}</p>
