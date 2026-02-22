@@ -1,23 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { LogOut, LayoutDashboard, Swords, Library } from "lucide-react";
+import { LogOut, LayoutDashboard, Swords, Library, Shield, Wand2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { logout } from "@/lib/supabase/auth";
 
 export default function DashboardNav() {
-  const router = useRouter();
   const { user } = useAuth();
 
   const handleLogout = async () => {
     await logout();
-    router.push("/");
-    router.refresh();
+    // Hard redirect para garantir que o middleware releia os cookies sem sessão
+    window.location.href = '/';
   };
 
+  const roleLabel = user?.role === "narrator" ? "Narrador" : user?.role === "player" ? "Jogador" : null;
+  const RoleIcon = user?.role === "narrator" ? Wand2 : Shield;
+  const roleBadgeClass =
+    user?.role === "narrator"
+      ? "border-purple-500/50 bg-purple-900/20 text-purple-300"
+      : "border-blue-500/50 bg-blue-900/20 text-blue-300";
+
   return (
-    <header className="border-b border-rpg-border bg-rpg-panel/80 backdrop-blur">
+    <header className="border-b border-rpg-border bg-rpg-panel/80 backdrop-blur sticky top-0 z-40">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link
           href="/dashboard"
@@ -29,28 +34,36 @@ export default function DashboardNav() {
         <nav className="flex items-center gap-4">
           <Link
             href="/dashboard"
-            className="flex items-center gap-2 text-sm text-gray-300 hover:text-white"
+            className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition"
           >
             <LayoutDashboard className="h-4 w-4" />
             Salas
           </Link>
           <Link
             href="/workspace"
-            className="flex items-center gap-2 text-sm text-gray-300 hover:text-white"
+            className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition"
           >
             <Library className="h-4 w-4" />
             Workspace
           </Link>
+
+          {/* Perfil do usuário — badge NÃO clicável aqui, troca de papel só no Workspace */}
           {user && (
-            <span className="text-sm text-rpg-muted">
-              {user.email}
-            </span>
+            <div className="flex items-center gap-3 pl-2 border-l border-rpg-border">
+              <span className="text-sm font-medium text-gray-200 hidden sm:block">
+                {user.displayName || user.email?.split("@")[0] || "Aventureiro"}
+              </span>
+              {roleLabel && (
+                <span
+                  className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full border ${roleBadgeClass}`}
+                >
+                  <RoleIcon className="h-3 w-3" />
+                  {roleLabel}
+                </span>
+              )}
+            </div>
           )}
-          {user && (
-            <span className="text-sm text-rpg-muted">
-              <span>{user?.displayName || 'Aventureiro'}</span>
-            </span>
-          )}
+
           <button
             type="button"
             onClick={handleLogout}

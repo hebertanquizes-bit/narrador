@@ -66,8 +66,8 @@ export async function middleware(request: NextRequest) {
     const role = profile?.role
 
     // Se ainda não escolheu workspace e não está na página de escolha
-    if (!role && pathname !== '/escolha-workspace') {
-        return NextResponse.redirect(new URL('/escolha-workspace', request.url))
+    if (!role && pathname !== '/workspace/selecionar') {
+        return NextResponse.redirect(new URL('/workspace/selecionar', request.url))
     }
 
     // Jogadores não podem criar salas nem acessar workspace de narrador

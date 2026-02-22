@@ -14,18 +14,33 @@ const supabase = getSupabaseClient()
  * Retorna null se não autenticado.
  */
 export async function getAuthUser(): Promise<AuthUser | null> {
+    // Verificação rápida local — se não tem sessão, retorna null sem chamar a rede
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.user) return null
+
+    return fetchProfileForUser(session.user.id, session.user.email)
+}
+
+/**
+ * Versão direta sem checagem de sessão — usada pelo refresh() quando sabemos que
+ * o usuário está autenticado mas acabou de mudar dados no banco.
+ */
+export async function fetchCurrentAuthUser(): Promise<AuthUser | null> {
     const { data: { user }, error } = await supabase.auth.getUser()
     if (error || !user) return null
+    return fetchProfileForUser(user.id, user.email)
+}
 
+async function fetchProfileForUser(userId: string, email: string | undefined): Promise<AuthUser | null> {
     const { data: profile } = await supabase
         .from('profiles')
         .select('display_name, avatar_url, role')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single()
 
     return {
-        id: user.id,
-        email: user.email,
+        id: userId,
+        email,
         displayName: profile?.display_name ?? null,
         avatarUrl: profile?.avatar_url ?? null,
         role: profile?.role ?? null,
@@ -105,20 +120,29 @@ export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
             return
         }
 
-        const user = session.user
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('display_name, avatar_url, role')
-            .eq('id', user.id)
-            .single()
+        try {
+            const user = session.user
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('display_name, avatar_url, role')
+                .eq('id', user.id)
+                .single()
 
-        callback({
-            id: user.id,
-            email: user.email,
-            displayName: profile?.display_name ?? null,
-            avatarUrl: profile?.avatar_url ?? null,
-            role: profile?.role ?? null,
-        })
+            if (error && error.code !== 'PGRST116') {
+                console.error("Erro no AuthState profile fetch:", error)
+            }
+
+            callback({
+                id: user.id,
+                email: user.email,
+                displayName: profile?.display_name ?? null,
+                avatarUrl: profile?.avatar_url ?? null,
+                role: profile?.role ?? null,
+            })
+        } catch (err) {
+            console.error("Exception in onAuthStateChange:", err)
+            callback(null)
+        }
     })
 }
 
@@ -167,7 +191,6 @@ export async function chooseWorkspaceType(userId: string, role: 'player' | 'narr
                     youtube: false,
                     imageGen: false,
                 },
-                api_keys_encrypted: {},
                 assets: [],
             })
 

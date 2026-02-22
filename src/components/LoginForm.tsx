@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Mail, Lock, LogIn, UserPlus, AlertCircle } from "lucide-react";
 import { loginWithEmail, loginWithGoogle, registerWithEmail } from "@/lib/supabase/auth";
 
 export default function LoginForm() {
-  const router = useRouter();
   const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,10 +47,19 @@ export default function LoginForm() {
         // Registrar novo usuário
         try {
           await registerWithEmail(email, password, email.split("@")[0]);
-          router.push("/dashboard");
-          router.refresh();
+          // Hard redirect: middleware relê sessão fresca e redireciona corretamente
+          window.location.href = '/dashboard';
         } catch (err: any) {
-          setError(err.message || "Erro ao criar conta");
+          const errorMsg = (err.message || "").toLowerCase();
+          if (errorMsg.includes("user already registered") || errorMsg.includes("already registered")) {
+            setError("Este email já possui uma conta. Tente fazer login.");
+          } else if (errorMsg.includes("signup") || errorMsg.includes("sign up") || errorMsg.includes("disabled")) {
+            setError("Cadastro desabilitado. Ative 'Enable sign ups' em Authentication → Settings no Supabase.");
+          } else if (errorMsg.includes("password") || errorMsg.includes("weak")) {
+            setError("Senha muito fraca. Use ao menos 6 caracteres com letras e números.");
+          } else {
+            setError(err.message || "Erro ao criar conta");
+          }
           setLoading(false);
         }
       } else {
@@ -65,15 +72,20 @@ export default function LoginForm() {
 
         try {
           await loginWithEmail(email, password);
-          router.push("/dashboard");
-          router.refresh();
+          window.location.href = '/dashboard';
         } catch (err: any) {
           const errorMsg = err.message || "Erro ao fazer login";
 
-          // Se for erro de usuário não encontrado, sugerir criar conta
-          if (errorMsg.includes("não encontrado") || errorMsg.includes("inválidos")) {
+          // Supabase retorna mensagens em inglês
+          if (
+            errorMsg.toLowerCase().includes("invalid login credentials") ||
+            errorMsg.toLowerCase().includes("invalid") ||
+            errorMsg.includes("não encontrado")
+          ) {
             setEmailNotFound(true);
-            setError(`Usuário não encontrado. Crie uma conta para começar!`);
+            setError("Email ou senha incorretos. Verifique seus dados.");
+          } else if (errorMsg.toLowerCase().includes("email not confirmed")) {
+            setError("Seu email ainda não foi confirmado. Verifique sua caixa de entrada.");
           } else {
             setError(errorMsg);
           }
@@ -91,10 +103,7 @@ export default function LoginForm() {
     setError("");
     try {
       await loginWithGoogle();
-      setTimeout(() => {
-        router.push("/dashboard");
-        router.refresh();
-      }, 1000);
+      // Google OAuth redireciona via callback, sem necessidade de redirecionamento manual
     } catch (err: any) {
       setError(err.message || "Erro ao fazer login com Google");
       setLoading(false);
@@ -114,8 +123,8 @@ export default function LoginForm() {
 
       {error && (
         <div className={`mb-4 p-3 rounded flex gap-2 ${emailNotFound
-            ? "bg-blue-900/20 border border-blue-500/30 text-blue-400"
-            : "bg-red-900/20 border border-red-500/30 text-red-400"
+          ? "bg-blue-900/20 border border-blue-500/30 text-blue-400"
+          : "bg-red-900/20 border border-red-500/30 text-red-400"
           }`}>
           <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
@@ -251,25 +260,6 @@ export default function LoginForm() {
           />
         </svg>
         Entrar com Google
-      </button>
-
-      <button
-        type="button"
-        disabled={loading}
-        className="btn-tertiary w-full text-center text-sm py-2 mb-6"
-        onClick={async () => {
-          setLoading(true);
-          try {
-            await loginWithEmail("visitor@narrador.local", "visitor123");
-            router.push("/dashboard");
-            router.refresh();
-          } catch (err: any) {
-            setError(err.message || "Erro ao entrar como visitante");
-            setLoading(false);
-          }
-        }}
-      >
-        👤 Entrar como Visitante
       </button>
 
       <div className="my-4 pt-4 border-t border-rpg-border">

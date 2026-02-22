@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { onAuthStateChange, getAuthUser } from '@/lib/supabase/auth'
+import { onAuthStateChange, getAuthUser, fetchCurrentAuthUser } from '@/lib/supabase/auth'
 import type { AuthUser } from '@/lib/supabase/types'
 
 // ============================================================
@@ -35,24 +35,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true)
 
     const refresh = useCallback(async () => {
-        const authUser = await getAuthUser()
+        const authUser = await fetchCurrentAuthUser()
         setUser(authUser)
     }, [])
 
     useEffect(() => {
-        // Carregar usuário inicial
-        getAuthUser().then((u) => {
-            setUser(u)
-            setLoading(false)
-        })
-
-        // Observar mudanças de sessão em tempo real
+        // onAuthStateChange dispara INITIAL_SESSION imediatamente com o estado atual
+        // Isso é mais confiável que chamar getAuthUser() separado
         const { data: { subscription } } = onAuthStateChange((u) => {
             setUser(u)
             setLoading(false)
         })
 
-        return () => subscription.unsubscribe()
+        // Safety net: se o evento demorar mais de 2s, destravar a UI de qualquer forma
+        const timeout = setTimeout(() => {
+            setLoading(false)
+        }, 2000)
+
+        return () => {
+            subscription.unsubscribe()
+            clearTimeout(timeout)
+        }
     }, [])
 
     const isNarrator = user?.role === 'narrator'

@@ -1,51 +1,61 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Shield, Wand2, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { chooseWorkspaceType } from "@/lib/supabase/auth";
 
 export default function WorkspaceSelectionPage() {
-    const { user, refresh } = useAuth();
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
+    const { user, loading } = useAuth();
+    const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Se o usuário já tiver uma Role definida, volta pro Workspace
-    if (user && user.role) {
-        router.replace('/workspace');
-        return null; // Evita renderização de componentes
-    }
+    // Não redireciona automaticamente — o usuário veio aqui para trocar de papel
+    // O acesso a esta página é controlado pelo Workspace
 
     const handleSelect = async (role: "player" | "narrator") => {
         if (!user) return;
-        setLoading(true);
+        setSaving(true);
         setError(null);
 
         try {
             await chooseWorkspaceType(user.id, role);
-            await refresh(); // Atualiza o contexto global de Auth
-            router.push('/workspace'); // Redireciona logo em seguida pro workspace
+            // Hard redirect: força o AuthContext a reiniciar com o novo role
+            // sem depender do refresh() que pode travar
+            window.location.href = '/dashboard';
         } catch (err) {
             console.error("Erro ao escolher workspace:", err);
             setError(err instanceof Error ? err.message : "Erro desconhecido ao configurar seu espaço.");
-            setLoading(false);
+            setSaving(false);
         }
     };
+
+    // Mostrar loading enquanto verifica sessão
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-rpg-darker flex items-center justify-center">
+                <p className="text-rpg-muted">Carregando...</p>
+            </div>
+        );
+    }
+
+    // Usuário não logado
+    if (!user) {
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-rpg-darker flex flex-col items-center justify-center p-4">
             <div className="max-w-3xl w-full">
                 <div className="text-center mb-10">
                     <h1 className="font-display text-4xl md:text-5xl font-bold text-rpg-gold mb-4">
-                        Acessar Workspace
+                        Escolha seu Papel
                     </h1>
                     <p className="text-xl text-rpg-light/80">
-                        Para utilizarmos o Workspace da plataforma, defina o seu papel de atuação.
+                        Como você vai jogar nesta sessão?
                     </p>
-                    <p className="text-sm text-rpg-danger mt-2 font-bold animate-pulse">
-                        ⚠️ Atenção: Esta escolha é permanente para esta conta.
+                    <p className="text-sm text-rpg-muted mt-2">
+                        Você pode trocar de papel a qualquer momento voltando aqui.
                     </p>
                 </div>
 
@@ -59,8 +69,8 @@ export default function WorkspaceSelectionPage() {
                     {/* Jogador */}
                     <button
                         onClick={() => handleSelect("player")}
-                        disabled={loading}
-                        className="group relative bg-rpg-dark border-2 border-rpg-border hover:border-rpg-gold rounded-xl p-8 text-left transition-all duration-300 hover:transform hover:-translate-y-1 overflow-hidden"
+                        disabled={saving}
+                        className="group relative bg-rpg-dark border-2 border-rpg-border hover:border-blue-500 rounded-xl p-8 text-left transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         <div className="relative z-10">
@@ -75,7 +85,7 @@ export default function WorkspaceSelectionPage() {
                                 <li>• Lançar dados e rolar perícias</li>
                             </ul>
                             <div className="flex items-center text-blue-400 font-bold text-sm">
-                                Escolher Caminho
+                                {saving ? "Salvando..." : "Escolher Caminho"}
                                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                             </div>
                         </div>
@@ -84,8 +94,8 @@ export default function WorkspaceSelectionPage() {
                     {/* Narrador */}
                     <button
                         onClick={() => handleSelect("narrator")}
-                        disabled={loading}
-                        className="group relative bg-rpg-dark border-2 border-rpg-border hover:border-rpg-gold rounded-xl p-8 text-left transition-all duration-300 hover:transform hover:-translate-y-1 overflow-hidden"
+                        disabled={saving}
+                        className="group relative bg-rpg-dark border-2 border-rpg-border hover:border-purple-500 rounded-xl p-8 text-left transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         <div className="relative z-10">
@@ -94,13 +104,13 @@ export default function WorkspaceSelectionPage() {
                                 Sou Narrador
                             </h2>
                             <ul className="text-rpg-muted space-y-2 mb-6 text-sm">
-                                <li>• Criar infinitas salas e campanhas</li>
-                                <li>• Organizar ativos (mapas, bestiário) no Workspace</li>
+                                <li>• Criar novas salas e campanhas</li>
+                                <li>• Organizar ativos (mapas, bestiário)</li>
                                 <li>• Configurar Chaves de API de IA e Música</li>
                                 <li>• Controle total e moderação in-game</li>
                             </ul>
                             <div className="flex items-center text-purple-400 font-bold text-sm">
-                                Escolher Caminho
+                                {saving ? "Salvando..." : "Escolher Caminho"}
                                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                             </div>
                         </div>

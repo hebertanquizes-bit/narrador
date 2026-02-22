@@ -85,7 +85,7 @@ export type NarratorWorkspace = {
     user_id: string
     available_systems: string[]       // ex: ['dnd5e', 'tormenta20']
     api_integrations: ApiIntegrations
-    api_keys_encrypted: Record<string, string>  // NUNCA lido no cliente
+    api_keys_encrypted?: Record<string, string>  // NUNCA lido no cliente — optional pois tem default no banco
     assets: WorkspaceAsset[]
     created_at: string
     updated_at: string
