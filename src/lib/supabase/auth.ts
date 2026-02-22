@@ -217,32 +217,50 @@ export async function chooseWorkspaceType(userId: string, role: 'player' | 'narr
     // 1. Definir o role
     await updateProfile(userId, { role })
 
-    // 2. Criar o workspace correspondente (ignora conflito se já existe)
+    // 2. Criar ou atualizar o workspace correspondente
     if (role === 'player') {
-        const { error } = await supabase
+        // Verifica se o workspace já existe
+        const { data: existingPlayer } = await supabase
             .from('player_workspaces')
-            .insert({ user_id: userId, tokens: [], character_sheets: [] } as never)
+            .select('id')
+            .eq('user_id', userId)
+            .maybeSingle()
 
-        if (error && error.code !== '23505') { // ignorar conflito (já existe)
-            throw new Error(`Erro ao criar workspace de jogador: ${error.message}`)
+        if (!existingPlayer) {
+            const { error } = await supabase
+                .from('player_workspaces')
+                .insert({ user_id: userId, tokens: [], character_sheets: [] } as never)
+
+            if (error) {
+                throw new Error(`Erro ao criar workspace de jogador: ${error.message}`)
+            }
         }
     } else {
-        const { error } = await supabase
+        // Verifica se o workspace de narrador já existe
+        const { data: existingNarrator } = await supabase
             .from('narrator_workspaces')
-            .insert({
-                user_id: userId,
-                available_systems: [],
-                api_integrations: {
-                    aiChat: false,
-                    music: false,
-                    youtube: false,
-                    imageGen: false,
-                },
-                assets: [],
-            } as never)
+            .select('id')
+            .eq('user_id', userId)
+            .maybeSingle()
 
-        if (error && error.code !== '23505') {
-            throw new Error(`Erro ao criar workspace de narrador: ${error.message}`)
+        if (!existingNarrator) {
+            const { error } = await supabase
+                .from('narrator_workspaces')
+                .insert({
+                    user_id: userId,
+                    available_systems: [],
+                    api_integrations: {
+                        aiChat: false,
+                        music: false,
+                        youtube: false,
+                        imageGen: false,
+                    },
+                    assets: [],
+                } as never)
+
+            if (error) {
+                throw new Error(`Erro ao criar workspace de narrador: ${error.message}`)
+            }
         }
     }
 
