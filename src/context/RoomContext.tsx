@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { getCurrentUser } from "@/lib/auth";
+import { useAuth } from "@/context/AuthContext";
 import { getCampaignConfig } from "@/lib/campaign";
 import { getApprovedCharacters } from "@/lib/characters";
 import {
@@ -48,7 +48,7 @@ type Checklist = {
 type RoomContextValue = {
   roomId: string;
   isHost: boolean;
-  currentUser: ReturnType<typeof getCurrentUser>;
+  currentUser: any;
   participants: Participant[];
   ready: Record<string, boolean>;
   phase: RoomPhase;
@@ -105,7 +105,7 @@ type RoomProviderProps = {
 export function RoomProvider({ roomId, isHost, children }: RoomProviderProps) {
   const [state, setState] = useState(() => getRoomState(roomId));
   const [checklistTick, setChecklistTick] = useState(0);
-  const currentUser = getCurrentUser();
+  const { user: currentUser } = useAuth();
 
   const invalidateChecklist = useCallback(() => setChecklistTick((t) => t + 1), []);
 
@@ -118,7 +118,7 @@ export function RoomProvider({ roomId, isHost, children }: RoomProviderProps) {
     addParticipant(roomId, {
       id: currentUser.id,
       userId: currentUser.id,
-      name: currentUser.name,
+      name: currentUser.displayName || "Jogador Anônimo",
     });
     refreshState();
   }, [roomId, currentUser?.id, refreshState]);

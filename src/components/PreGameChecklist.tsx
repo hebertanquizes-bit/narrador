@@ -2,7 +2,7 @@
 
 import { useMemo, useEffect, useState } from "react";
 import { Check, Circle } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth";
+import { useAuth } from "@/context/AuthContext";
 import { getRoomById } from "@/lib/rooms";
 import { getApprovedCharacters } from "@/lib/characters";
 import { hasAiKeyConfigured } from "@/lib/ai-key";
@@ -18,7 +18,7 @@ const steps = [
 ] as const;
 
 export default function PreGameChecklist({ roomId, isHost }: Props) {
-  const user = getCurrentUser();
+  const { user } = useAuth();
   const room = useMemo(() => getRoomById(roomId), [roomId]);
   const [approved, setApproved] = useState(() => getApprovedCharacters(roomId));
   const aiConfigured = useMemo(() => hasAiKeyConfigured(), []);
@@ -62,11 +62,10 @@ export default function PreGameChecklist({ roomId, isHost }: Props) {
             className="flex items-center gap-2 sm:gap-3"
           >
             <div
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 ${
-                step.done
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 ${step.done
                   ? "border-rpg-success bg-rpg-success/20 text-rpg-success"
                   : "border-rpg-border text-rpg-muted"
-              }`}
+                }`}
             >
               {step.done ? (
                 <Check className="h-4 w-4" />
@@ -75,9 +74,8 @@ export default function PreGameChecklist({ roomId, isHost }: Props) {
               )}
             </div>
             <span
-              className={`text-sm ${
-                step.done ? "text-gray-200" : "text-rpg-muted"
-              }`}
+              className={`text-sm ${step.done ? "text-gray-200" : "text-rpg-muted"
+                }`}
             >
               {step.label}
             </span>

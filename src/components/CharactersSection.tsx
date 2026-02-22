@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Upload, UserPlus, Check, Clock } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth";
+import { useAuth } from "@/context/AuthContext";
 import {
   getCharacters,
   getPendingCharacters,
@@ -18,7 +18,7 @@ export default function CharactersSection({ roomId, isHost }: Props) {
   const [characters, setCharacters] = useState(getCharacters(roomId));
   const [pending, setPending] = useState(getPendingCharacters(roomId));
   const [uploadedFileName, setUploadedFileName] = useState("");
-  const user = getCurrentUser();
+  const { user } = useAuth();
 
   const refresh = () => {
     setCharacters(getCharacters(roomId));
@@ -29,7 +29,7 @@ export default function CharactersSection({ roomId, isHost }: Props) {
   const handleSimulateUpload = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !uploadedFileName.trim()) return;
-    const char = addCharacter(roomId, user.id, user.name, uploadedFileName.trim());
+    const char = addCharacter(roomId, user.id, user.displayName || "Jogador", uploadedFileName.trim());
     // Se o usuário é host, aprova automaticamente sua própria ficha
     if (isHost) {
       approveCharacter(char.id);

@@ -4,71 +4,92 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, DoorOpen, Hash, X, Trash2 } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth";
 import {
   getRooms,
   createRoom,
   findRoomByCode,
   deleteRoom,
   cleanupOldEmptyRooms,
-} from "@/lib/rooms";
+} from "@/lib/supabase/rooms";
+import type { Room } from "@/lib/supabase/types";
+import { useAuth } from "@/context/AuthContext";
 import DashboardNav from "@/components/DashboardNav";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<ReturnType<typeof getCurrentUser>>(null);
-  const [rooms, setRooms] = useState(getRooms());
+  const { user } = useAuth();
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [roomName, setRoomName] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [loadingAction, setLoadingAction] = useState(false);
 
   useEffect(() => {
-    const u = getCurrentUser();
-    setUser(u);
-    if (!u) {
+    if (!user) {
       router.replace("/");
       return;
     }
-    // Limpeza automática de salas antigas
-    cleanupOldEmptyRooms();
-    setRooms(getRooms());
-  }, [router]);
 
-  const handleDeleteRoom = (roomId: string) => {
+    const fetchRooms = async () => {
+      // Limpeza automática de salas antigas (agora não faz nada no DB)
+      await cleanupOldEmptyRooms();
+      const dbRooms = await getRooms();
+      setRooms(dbRooms);
+    };
+
+    fetchRooms();
+  }, [router, user]);
+
+  const handleDeleteRoom = async (roomId: string) => {
     if (!user) return;
-    const success = deleteRoom(roomId, user.id);
+    setLoadingAction(true);
+    const success = await deleteRoom(roomId, user.id);
     if (success) {
-      setRooms(getRooms());
+      const dbRooms = await getRooms();
+      setRooms(dbRooms);
       setDeleteConfirm(null);
+    }
+    setLoadingAction(false);
+  };
+
+  const handleCreateRoom = async () => {
+    if (!user || user.role !== "narrator") {
+      setRoomName("Você precisa ser narrador!");
+      return;
+    }
+    setLoadingAction(true);
+    const finalName = roomName.trim() || "Nova Campanha";
+    const newRoom = await createRoom(user.id, finalName);
+
+    if (newRoom) {
+      const dbRooms = await getRooms();
+      setRooms(dbRooms);
+      setShowCreateDialog(false);
+      setRoomName("");
+      router.push(`/sala/${newRoom.id}`);
+      router.refresh();
+    } else {
+      setLoadingAction(false);
     }
   };
 
-  const handleCreateRoom = () => {
-    if (!user) return;
-    const finalName = roomName.trim() || "Nova Campanha";
-    const room = createRoom(user.id, finalName);
-    setRooms(getRooms());
-    setShowCreateDialog(false);
-    setRoomName("");
-    router.push(`/sala/${room.id}`);
-    router.refresh();
-  };
-
-  const handleEnterWithCode = (e: React.FormEvent) => {
+  const handleEnterWithCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setCodeError("");
-    const room = findRoomByCode(code);
+    setLoadingAction(true);
+    const room = await findRoomByCode(code);
     if (!room) {
       setCodeError("Código não encontrado. Verifique e tente novamente.");
+      setLoadingAction(false);
       return;
     }
     router.push(`/sala/${room.id}`);
     router.refresh();
   };
 
-  const myRooms = rooms.filter((r) => r.hostId === user?.id);
+  const myRooms = rooms.filter((r) => r.owner_id === user?.id);
 
   if (!user) {
     return (
@@ -150,7 +171,7 @@ export default function DashboardPage() {
                     href={`/sala/${room.id}`}
                     className="flex-1"
                   >
-                    <span className="font-medium">{room.name}</span>
+                    <span className="font-medium">{room.campaign_config?.roomName || "Sala sem nome"}</span>
                   </Link>
                   <button
                     onClick={() => setDeleteConfirm(room.id)}
@@ -214,11 +235,12 @@ export default function DashboardPage() {
                     Cancelar
                   </button>
                   <button
+                    disabled={loadingAction}
                     onClick={handleCreateRoom}
                     className="btn-primary flex-1 flex items-center justify-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
-                    Criar
+                    {loadingAction ? '...' : 'Criar'}
                   </button>
                 </div>
               </div>
@@ -252,13 +274,14 @@ export default function DashboardPage() {
                   Cancelar
                 </button>
                 <button
+                  disabled={loadingAction}
                   onClick={() => {
                     handleDeleteRoom(deleteConfirm);
                   }}
                   className="btn-danger flex-1 flex items-center justify-center gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
-                  Excluir
+                  {loadingAction ? '...' : 'Excluir'}
                 </button>
               </div>
             </div>

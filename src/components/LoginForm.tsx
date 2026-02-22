@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, LogIn, UserPlus, AlertCircle } from "lucide-react";
-import { loginWithEmail, loginWithGoogle, registerWithEmail } from "@/lib/auth";
+import { loginWithEmail, loginWithGoogle, registerWithEmail } from "@/lib/supabase/auth";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -69,7 +69,7 @@ export default function LoginForm() {
           router.refresh();
         } catch (err: any) {
           const errorMsg = err.message || "Erro ao fazer login";
-          
+
           // Se for erro de usuário não encontrado, sugerir criar conta
           if (errorMsg.includes("não encontrado") || errorMsg.includes("inválidos")) {
             setEmailNotFound(true);
@@ -113,11 +113,10 @@ export default function LoginForm() {
       </p>
 
       {error && (
-        <div className={`mb-4 p-3 rounded flex gap-2 ${
-          emailNotFound 
-            ? "bg-blue-900/20 border border-blue-500/30 text-blue-400" 
+        <div className={`mb-4 p-3 rounded flex gap-2 ${emailNotFound
+            ? "bg-blue-900/20 border border-blue-500/30 text-blue-400"
             : "bg-red-900/20 border border-red-500/30 text-red-400"
-        }`}>
+          }`}>
           <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <span className="text-sm">{error}</span>
@@ -153,9 +152,8 @@ export default function LoginForm() {
                 setEmailNotFound(false);
               }}
               placeholder="seu@email.com"
-              className={`input-field pl-10 ${
-                !isValidEmail() && email.length > 0 ? "border-red-500" : ""
-              }`}
+              className={`input-field pl-10 ${!isValidEmail() && email.length > 0 ? "border-red-500" : ""
+                }`}
               required
             />
           </div>

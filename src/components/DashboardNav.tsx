@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogOut, LayoutDashboard, Swords, Library } from "lucide-react";
-import { getCurrentUser, logout } from "@/lib/auth";
+import { useAuth } from "@/context/AuthContext";
+import { logout } from "@/lib/supabase/auth";
 
 export default function DashboardNav() {
   const router = useRouter();
-  const user = getCurrentUser();
+  const { user } = useAuth();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push("/");
     router.refresh();
   };
@@ -42,7 +43,12 @@ export default function DashboardNav() {
           </Link>
           {user && (
             <span className="text-sm text-rpg-muted">
-              {user.name} ({user.email})
+              {user.email}
+            </span>
+          )}
+          {user && (
+            <span className="text-sm text-rpg-muted">
+              <span>{user?.displayName || 'Aventureiro'}</span>
             </span>
           )}
           <button

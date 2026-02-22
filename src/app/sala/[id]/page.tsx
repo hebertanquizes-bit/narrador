@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Swords } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth";
-import { getRoomById } from "@/lib/rooms";
+import { useAuth } from "@/context/AuthContext";
+import { getRoomById } from "@/lib/supabase/rooms";
+import type { Room } from "@/lib/supabase/types";
 import DashboardNav from "@/components/DashboardNav";
 import CampaignConfig from "@/components/CampaignConfig";
 import CharactersSection from "@/components/CharactersSection";
@@ -21,25 +22,32 @@ export default function SalaPage() {
   const params = useParams();
   const router = useRouter();
   const roomId = params.id as string;
-  const [user, setUser] = useState<ReturnType<typeof getCurrentUser>>(null);
-  const [room, setRoom] = useState<ReturnType<typeof getRoomById>>(undefined);
+  const { user, loading: authLoading } = useAuth();
+  const [room, setRoom] = useState<Room | undefined | null>(undefined); // undefined = loading, null = not found
 
   useEffect(() => {
-    const u = getCurrentUser();
-    setUser(u);
-    if (!u) {
+    if (authLoading) return;
+    if (!user) {
       router.replace("/");
       return;
     }
-    setRoom(getRoomById(roomId));
-  }, [roomId, router]);
+    const fetchRoom = async () => {
+      const data = await getRoomById(roomId);
+      if (data) {
+        setRoom(data);
+      } else {
+        setRoom(null);
+      }
+    };
+    fetchRoom();
+  }, [roomId, router, user, authLoading]);
 
-  const isHost = !!user && !!room && room.hostId === user.id;
+  const isHost = !!user && !!room && room.owner_id === user.id;
 
-  if (!user) {
+  if (authLoading || (!user && room === undefined) || (!room && room !== null)) {
     return (
       <main className="min-h-screen flex items-center justify-center p-4">
-        <p className="text-rpg-muted">Redirecionando...</p>
+        <p className="text-rpg-muted">Carregando sala...</p>
       </main>
     );
   }
@@ -79,7 +87,7 @@ function SalaInner({
   isHost,
 }: {
   roomId: string;
-  room: { code: string; name: string };
+  room: Room;
   isHost: boolean;
 }) {
   const { phase } = useRoom();
@@ -103,7 +111,7 @@ function SalaInner({
 
       <h1 className="font-display text-3xl font-bold text-rpg-gold mb-2 flex items-center gap-2">
         <Swords className="h-8 w-8" />
-        {room.name}
+        {room.campaign_config?.roomName || "Sala sem nome"}
       </h1>
       <p className="text-rpg-muted mb-8">
         {isHost ? "Você é o Host desta sala." : "Você entrou nesta sala como jogador."}
