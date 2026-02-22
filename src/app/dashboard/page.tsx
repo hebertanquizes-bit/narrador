@@ -59,7 +59,7 @@ export default function DashboardPage() {
   };
 
   const handleCreateRoom = async () => {
-    if (!user || !isNarrator) return;
+    if (!user) return;
     setLoadingAction(true);
     const finalName = roomName.trim() || "Nova Campanha";
     const newRoom = await createRoom(user.id, finalName);
@@ -111,51 +111,29 @@ export default function DashboardPage() {
             Minhas Salas
           </h1>
           <p className="text-rpg-muted text-sm">
-            {isNarrator
-              ? "Você é um Narrador — pode criar e gerenciar salas."
-              : "Você é um Jogador — entre em uma sala com o código do Host."}
+            Gerencie suas campanhas e acesse suas salas de RPG.
           </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Criar Sala — apenas Narradores */}
-          {isNarrator ? (
-            <div className="panel">
-              <h2 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
-                <Plus className="h-5 w-5 text-rpg-accent" />
-                Criar Sala
-              </h2>
-              <p className="text-sm text-rpg-muted mb-4">
-                Gera uma nova campanha com código de 6 dígitos para os jogadores entrarem.
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowCreateDialog(true)}
-                className="btn-primary flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Criar Sala
-              </button>
-            </div>
-          ) : (
-            /* Jogador: exibe painel explicativo em vez de botão de criar */
-            <div className="panel border-blue-500/20 bg-blue-900/5">
-              <h2 className="text-lg font-semibold text-blue-300 mb-4 flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Modo Jogador
-              </h2>
-              <p className="text-sm text-rpg-muted mb-4">
-                Entre em uma sala existente com o código do Host. Para criar salas, troque seu papel para Narrador.
-              </p>
-              <Link
-                href="/workspace/selecionar"
-                className="text-sm text-purple-300 hover:text-purple-200 flex items-center gap-1 transition"
-              >
-                <Wand2 className="h-4 w-4" />
-                Quero ser Narrador →
-              </Link>
-            </div>
-          )}
+          {/* Criar Sala — disponível para todos */}
+          <div className="panel">
+            <h2 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
+              <Plus className="h-5 w-5 text-rpg-accent" />
+              Criar Sala
+            </h2>
+            <p className="text-sm text-rpg-muted mb-4">
+              Gera uma nova campanha com código de 6 dígitos para os formidáveis jogarem.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowCreateDialog(true)}
+              className="btn-primary flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Criar Sala
+            </button>
+          </div>
 
           {/* Entrar com Código — disponível para todos */}
           <div className="panel">
@@ -186,37 +164,35 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Salas criadas — apenas Narrador tem salas criadas */}
-        {isNarrator && (
-          <section className="mt-10">
-            <h2 className="font-display text-xl font-bold text-gray-200 mb-4">
-              Salas que você criou
-            </h2>
-            {myRooms.length === 0 ? (
-              <p className="text-rpg-muted">Nenhuma sala criada ainda.</p>
-            ) : (
-              <ul className="space-y-2">
-                {myRooms.map((room) => (
-                  <li key={room.id} className="panel flex items-center justify-between group hover:border-rpg-accent transition p-4">
-                    <Link
-                      href={`/sala/${room.id}`}
-                      className="flex-1"
-                    >
-                      <span className="font-medium">{room.campaign_config?.roomName || "Sala sem nome"}</span>
-                    </Link>
-                    <button
-                      onClick={() => setDeleteConfirm(room.id)}
-                      className="ml-4 p-2 text-rpg-muted hover:text-rpg-danger hover:bg-rpg-danger/10 rounded transition opacity-0 group-hover:opacity-100"
-                      title="Excluir sala"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        )}
+        {/* Salas criadas — todos veem suas salas como owners */}
+        <section className="mt-10">
+          <h2 className="font-display text-xl font-bold text-gray-200 mb-4">
+            Salas que você criou
+          </h2>
+          {myRooms.length === 0 ? (
+            <p className="text-rpg-muted">Nenhuma sala criada ainda.</p>
+          ) : (
+            <ul className="space-y-2">
+              {myRooms.map((room) => (
+                <li key={room.id} className="panel flex items-center justify-between group hover:border-rpg-accent transition p-4">
+                  <Link
+                    href={`/sala/${room.id}`}
+                    className="flex-1"
+                  >
+                    <span className="font-medium">{room.campaign_config?.roomName || "Sala sem nome"}</span>
+                  </Link>
+                  <button
+                    onClick={() => setDeleteConfirm(room.id)}
+                    className="ml-4 p-2 text-rpg-muted hover:text-rpg-danger hover:bg-rpg-danger/10 rounded transition opacity-0 group-hover:opacity-100"
+                    title="Excluir sala"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         {/* Modal de criar sala */}
         {showCreateDialog && (

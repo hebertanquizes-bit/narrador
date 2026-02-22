@@ -51,11 +51,9 @@ export default function LoginForm() {
         }
 
         // Registrar novo usuário
-        // registerWithEmail já define o role como 'player' automaticamente
         try {
           await registerWithEmail(email, password, email.split("@")[0]);
-          // Hard redirect: middleware relê sessão fresca e redireciona corretamente
-          // Como novo usuário já tem role=player, vai direto para o dashboard
+          // Redireciona para o dashboard
           window.location.href = '/dashboard';
         } catch (err: unknown) {
           const errorMsg = getErrorMessage(err).toLowerCase();
@@ -81,9 +79,6 @@ export default function LoginForm() {
         try {
           await loginWithEmail(email, password);
           // Hard redirect para garantir que o middleware releia os cookies com sessão fresca
-          // O middleware verificará o role e redirecionará adequadamente:
-          // - role=player ou role=narrator → /dashboard
-          // - sem role → /workspace/selecionar (não deve ocorrer em usuários novos)
           window.location.href = '/dashboard';
         } catch (err: unknown) {
           const errorMsg = getErrorMessage(err);
@@ -216,15 +211,6 @@ export default function LoginForm() {
                 required
               />
             </div>
-          </div>
-        )}
-
-        {/* Aviso de role para novos usuários */}
-        {isRegistering && (
-          <div className="text-xs text-rpg-muted bg-blue-900/10 border border-blue-500/20 rounded p-3">
-            <span className="text-blue-300 font-medium">ℹ️ Novo usuário</span>
-            <br />
-            Você começará como <strong className="text-blue-200">Jogador</strong>. Para se tornar Narrador, acesse o Workspace após entrar.
           </div>
         )}
 

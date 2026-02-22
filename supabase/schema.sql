@@ -259,25 +259,13 @@ create policy "Narrador cria próprio workspace"
 -- A coluna existe apenas para uso server-side via Service Role Key.
 
 -- ---------- ROOMS ----------
-create policy "Salas visíveis para participantes e narrador"
+create policy "Salas visíveis para todos os usuários autenticados"
   on public.rooms for select
-  using (
-    auth.uid() = owner_id
-    or exists (
-      select 1 from public.room_participants
-      where room_id = rooms.id and user_id = auth.uid()
-    )
-  );
+  using (auth.role() = 'authenticated');
 
-create policy "Apenas narradores criam salas"
+create policy "Usuários podem criar salas"
   on public.rooms for insert
-  with check (
-    auth.uid() = owner_id
-    and exists (
-      select 1 from public.profiles
-      where id = auth.uid() and role = 'narrator'
-    )
-  );
+  with check (auth.uid() = owner_id);
 
 create policy "Apenas owner atualiza sala"
   on public.rooms for update

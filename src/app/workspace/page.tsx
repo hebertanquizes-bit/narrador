@@ -69,12 +69,7 @@ export default function WorkspacePage() {
       return;
     }
 
-    // Role Guard inside Workspace
-    if (!user.role) {
-      router.push('/workspace/selecionar');
-      return;
-    }
-
+    // Guard removido a pedido do usuário: todos os usuários podem usar o workspace sem restrição de Role
     // TODO: This uses old localStorage logic that we will migrate to Supabase in the next steps!
     const workspaceKey = `narrador_workspace_${user.id}`;
 
@@ -316,22 +311,7 @@ export default function WorkspacePage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {/* Papel atual + botão Trocar — único local onde isso é permitido */}
-            <div className="flex items-center gap-2">
-              <span className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded-full border font-medium ${isNarrator
-                ? 'border-purple-500/50 bg-purple-900/20 text-purple-300'
-                : 'border-blue-500/50 bg-blue-900/20 text-blue-300'
-                }`}>
-                <Wand2 className="w-3 h-3" />
-                {isNarrator ? 'Narrador' : 'Jogador'}
-              </span>
-              <Link
-                href="/workspace/selecionar"
-                className="text-xs px-3 py-1.5 rounded-full border border-rpg-border text-rpg-muted hover:text-white hover:border-rpg-gold transition"
-              >
-                Trocar Papel
-              </Link>
-            </div>
+            {/* Papel e botão de trocar foram removidos do UI */}
             <button
               onClick={() => setShowUploadModal(true)}
               className="flex items-center gap-2 bg-rpg-gold text-rpg-darker px-4 py-2 rounded font-bold hover:bg-rpg-gold/80 transition-colors"

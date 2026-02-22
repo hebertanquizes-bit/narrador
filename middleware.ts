@@ -48,26 +48,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // ─── Pegar role APENAS se acessar áreas exclusivas ─────────
-  const narratorOnlyPaths = ['/workspace/narrador', '/sala/criar']
-  const isNarratorOnly = narratorOnlyPaths.some(p => pathname.startsWith(p))
-
-  if (isNarratorOnly) {
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    const profile = profileData as { role: 'player' | 'narrator' | null } | null
-    const role = profile?.role ?? null
-
-    if (profileError) console.log('[Middleware] Error fetching profile:', profileError.message)
-
-    if (role === 'player' || !role) {
-      console.log('[Middleware] Ineligible access to narrator area, redirecting to dashboard')
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-  }
+  // Removido temporariamente / permanentemente a pedido do usuário
+  // "Considere todos usuarios iguais no login"
 
   return supabaseResponse
 }

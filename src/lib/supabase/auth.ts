@@ -75,38 +75,8 @@ export async function registerWithEmail(email: string, password: string, name: s
     })
     if (error) throw new Error(error.message)
 
-    // Se o usuário foi criado, definir automaticamente como player
-    if (data.user) {
-        try {
-            await ensurePlayerRole(data.user.id)
-        } catch (e) {
-            // Não bloqueia o registro se falhar (trigger pode já ter criado)
-            console.warn('Aviso ao definir role inicial:', e)
-        }
-    }
-
+    // Não definimos mais role padrão automaticamente na criação.
     return data.user
-}
-
-/**
- * Garante que o usuário tem o role `player` caso não tenha role definido ainda.
- * Chamado após registro para simplificar o onboarding.
- */
-export async function ensurePlayerRole(userId: string): Promise<void> {
-    // Verificar se já tem role
-    const { data } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single()
-
-    const profile = data as Pick<Profile, 'role'> | null
-
-    // Se já tem role, não fazer nada
-    if (profile?.role) return
-
-    // Definir como player (padrão)
-    await chooseWorkspaceType(userId, 'player')
 }
 
 /**
@@ -193,76 +163,4 @@ export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
     })
 }
 
-// ============================================================
-// PROFILE HELPERS
-// ============================================================
-
-/**
- * Atualiza o perfil do usuário.
- */
-export async function updateProfile(userId: string, data: Partial<Pick<Profile, 'display_name' | 'avatar_url' | 'role'>>) {
-    const { error } = await supabase
-        .from('profiles')
-        .update(data as never)
-        .eq('id', userId)
-
-    if (error) throw new Error(error.message)
-}
-
-/**
- * Define o role do usuário e cria o workspace correspondente.
- * Pode ser chamado múltiplas vezes para trocar de papel.
- */
-export async function chooseWorkspaceType(userId: string, role: 'player' | 'narrator') {
-    // 1. Definir o role
-    await updateProfile(userId, { role })
-
-    // 2. Criar ou atualizar o workspace correspondente
-    if (role === 'player') {
-        // Verifica se o workspace já existe
-        const { data: existingPlayer } = await supabase
-            .from('player_workspaces')
-            .select('id')
-            .eq('user_id', userId)
-            .maybeSingle()
-
-        if (!existingPlayer) {
-            const { error } = await supabase
-                .from('player_workspaces')
-                .insert({ user_id: userId, tokens: [], character_sheets: [] } as never)
-
-            if (error) {
-                throw new Error(`Erro ao criar workspace de jogador: ${error.message}`)
-            }
-        }
-    } else {
-        // Verifica se o workspace de narrador já existe
-        const { data: existingNarrator } = await supabase
-            .from('narrator_workspaces')
-            .select('id')
-            .eq('user_id', userId)
-            .maybeSingle()
-
-        if (!existingNarrator) {
-            const { error } = await supabase
-                .from('narrator_workspaces')
-                .insert({
-                    user_id: userId,
-                    available_systems: [],
-                    api_integrations: {
-                        aiChat: false,
-                        music: false,
-                        youtube: false,
-                        imageGen: false,
-                    },
-                    assets: [],
-                } as never)
-
-            if (error) {
-                throw new Error(`Erro ao criar workspace de narrador: ${error.message}`)
-            }
-        }
-    }
-
-    return role
-}
+// ─── Papéis não são mais exigidos pelo fluxo de entrada ─────────
