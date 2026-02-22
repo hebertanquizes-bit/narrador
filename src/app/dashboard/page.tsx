@@ -29,7 +29,11 @@ export default function DashboardPage() {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      router.replace("/");
+      import('@/lib/supabase/auth').then(({ logout }) => {
+        logout().finally(() => {
+          router.replace("/");
+        });
+      });
       return;
     }
 

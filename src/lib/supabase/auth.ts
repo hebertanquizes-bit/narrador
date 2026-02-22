@@ -180,7 +180,15 @@ export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
             })
         } catch (err) {
             console.error("Exception in onAuthStateChange:", err)
-            callback(null)
+            // Em caso de erro de rede (ex: 429), não deslogar o usuário localmente.
+            // Retorna a sessão básica. Isso evita um loop infinito de redirecionamentos.
+            callback({
+                id: session.user.id,
+                email: session.user.email,
+                displayName: session.user.email?.split('@')[0] || "Usuário",
+                avatarUrl: null,
+                role: null,
+            })
         }
     })
 }
@@ -195,7 +203,7 @@ export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
 export async function updateProfile(userId: string, data: Partial<Pick<Profile, 'display_name' | 'avatar_url' | 'role'>>) {
     const { error } = await supabase
         .from('profiles')
-        .update(data)
+        .update(data as never)
         .eq('id', userId)
 
     if (error) throw new Error(error.message)
