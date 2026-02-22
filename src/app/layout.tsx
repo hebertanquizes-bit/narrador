@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Crimson_Text } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 
 const display = Crimson_Text({
   weight: ["600", "700"],
@@ -10,7 +11,7 @@ const display = Crimson_Text({
 
 export const metadata: Metadata = {
   title: "Narrador — RPG com IA",
-  description: "MVP para narrar RPG de mesa auxiliado por IA",
+  description: "Plataforma de RPG de mesa com IA, workspaces e campanhas colaborativas",
 };
 
 export default function RootLayout({
@@ -21,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark">
       <body className={`${display.variable} font-sans min-h-screen bg-rpg-dark text-gray-100`}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
