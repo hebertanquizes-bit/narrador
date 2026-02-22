@@ -119,10 +119,10 @@ export async function logout() {
  * Observa mudanças de sessão em tempo real.
  * Usado no AuthProvider para manter estado global.
  */
-export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
+export function onAuthStateChange(callback: (user: AuthUser | null, debugInfo?: string) => void) {
     return supabase.auth.onAuthStateChange(async (event, session) => {
         if (!session?.user) {
-            callback(null)
+            callback(null, `event:${event}|session:false`)
             return
         }
 
@@ -136,6 +136,8 @@ export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
 
             if (error && error.code !== 'PGRST116') {
                 console.error("Erro no AuthState profile fetch:", error)
+                callback(null, `event:${event}|profiles_err:${error.message}`)
+                return
             }
 
             // Cast explícito para evitar inferência `never`
@@ -147,18 +149,19 @@ export function onAuthStateChange(callback: (user: AuthUser | null) => void) {
                 displayName: profile?.display_name ?? null,
                 avatarUrl: profile?.avatar_url ?? null,
                 role: profile?.role ?? null,
-            })
+            }, `event:${event}|success:user_fetched`)
         } catch (err) {
             console.error("Exception in onAuthStateChange:", err)
             // Em caso de erro de rede (ex: 429), não deslogar o usuário localmente.
             // Retorna a sessão básica. Isso evita um loop infinito de redirecionamentos.
+            const errmsg = err instanceof Error ? err.message : "unknown_err";
             callback({
                 id: session.user.id,
                 email: session.user.email,
                 displayName: session.user.email?.split('@')[0] || "Usuário",
                 avatarUrl: null,
                 role: null,
-            })
+            }, `event:${event}|catch:${errmsg}`)
         }
     })
 }

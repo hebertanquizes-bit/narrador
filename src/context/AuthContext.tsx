@@ -15,6 +15,7 @@ type AuthContextType = {
     isPlayer: boolean
     hasRole: boolean
     refresh: () => Promise<void>
+    debugContext: string
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextType>({
     isPlayer: false,
     hasRole: false,
     refresh: async () => { },
+    debugContext: "init"
 })
 
 // ============================================================
@@ -33,6 +35,7 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<AuthUser | null>(null)
     const [loading, setLoading] = useState(true)
+    const [debugContext, setDebugContext] = useState<string>("init")
 
     const refresh = useCallback(async () => {
         const authUser = await fetchCurrentAuthUser()
@@ -40,19 +43,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [])
 
     useEffect(() => {
-        // onAuthStateChange dispara INITIAL_SESSION imediatamente com o estado atual
-        // Isso é mais confiável que chamar getAuthUser() separado
-        const { data: { subscription } } = onAuthStateChange((u) => {
+        let mounted = true;
+
+        // Setup subscription
+        const { data: { subscription } } = onAuthStateChange((u, debugInfo) => {
+            if (!mounted) return;
             setUser(u)
+            setDebugContext(debugInfo || "no_debug")
             setLoading(false)
         })
 
-        // Safety net: se o evento demorar mais de 2s, destravar a UI de qualquer forma
+        // Instantly try to fetch user manually if the event doesn't fire fast enough
+        fetchCurrentAuthUser().then((u) => {
+            if (!mounted) return;
+            // Only use this manual fallback if loading is still true
+            setLoading(prev => {
+                if (prev) {
+                    setUser(u);
+                    setDebugContext(ctx => ctx === "init" ? "init | manual_fetch_success" : ctx);
+                    return false;
+                }
+                return prev;
+            });
+        }).catch(err => {
+            console.error(err);
+        });
+
         const timeout = setTimeout(() => {
-            setLoading(false)
-        }, 2000)
+            if (!mounted) return;
+            setLoading(prev => {
+                if (prev) {
+                    setDebugContext(ctx => ctx + " | timed_out_fallback");
+                    return false;
+                }
+                return prev;
+            });
+        }, 2500)
 
         return () => {
+            mounted = false;
             subscription.unsubscribe()
             clearTimeout(timeout)
         }
@@ -63,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const hasRole = isNarrator || isPlayer
 
     return (
-        <AuthContext.Provider value={{ user, loading, isNarrator, isPlayer, hasRole, refresh }}>
+        <AuthContext.Provider value={{ user, loading, isNarrator, isPlayer, hasRole, refresh, debugContext }}>
             {children}
         </AuthContext.Provider>
     )

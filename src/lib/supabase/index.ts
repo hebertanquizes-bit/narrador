@@ -22,9 +22,6 @@ export {
     loginAnonymously,
     logout,
     onAuthStateChange,
-    updateProfile,
-    chooseWorkspaceType,
-    ensurePlayerRole,
 } from './auth'
 
 // Types

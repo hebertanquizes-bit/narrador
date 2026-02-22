@@ -1,0 +1,101 @@
+﻿
+> narrador@0.1.0 build
+> next build
+
+  Ôû▓ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+node.exe :  ÔÜá Compiled with 
+warnings
+No linha:1 caractere:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo          : 
+    NotSpecified: ( ÔÜá Comp  
+  iled with warnings:String   
+ ) [], RemoteException
+    + FullyQualifiedErrorId : 
+    NativeCommandError
+ 
+
+./src/app/workspace/selecionar
+/page.tsx
+Attempted import error: 
+'chooseWorkspaceType' is not 
+exported from 
+'@/lib/supabase/auth' 
+(imported as 
+'chooseWorkspaceType').
+
+Import trace for requested 
+module:
+./src/app/workspace/selecionar
+/page.tsx
+
+ ÔÜá Compiled with warnings
+
+./src/app/workspace/selecionar
+/page.tsx
+Attempted import error: 
+'chooseWorkspaceType' is not 
+exported from 
+'@/lib/supabase/auth' 
+(imported as 
+'chooseWorkspaceType').
+
+Import trace for requested 
+module:
+./src/app/workspace/selecionar
+/page.tsx
+
+ Ô£ô Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+./src/app/sala/[id]/page.tsx:2
+4:18
+Type error: 'params' is 
+possibly 'null'.
+
+[0m [90m 22 |[39m   
+[36mconst[39m params 
+[33m=[39m 
+useParams()[33m;[39m[0m
+[0m [90m 23 |[39m   
+[36mconst[39m router 
+[33m=[39m 
+useRouter()[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 
+24 |[39m   [36mconst[39m 
+roomId [33m=[39m 
+params[33m.[39mid 
+[36mas[39m 
+string[33m;[39m[0m
+[0m [90m    |[39m          
+        
+[31m[1m^[22m[39m[0m
+[0m [90m 25 |[39m   
+[36mconst[39m { 
+user[33m,[39m 
+loading[33m:[39m 
+authLoading } [33m=[39m 
+useAuth()[33m;[39m[0m
+[0m [90m 26 |[39m   
+[36mconst[39m 
+[room[33m,[39m setRoom] 
+[33m=[39m useState[33m<[39
+m[33mRoom[39m [33m|[39m 
+undefined [33m|[39m [36mnul
+l[39m[33m>[39m(undefined)[
+33m;[39m [90m// undefined = 
+loading, null = not 
+found[39m[0m
+[0m [90m 27 |[39m[0m
+Next.js build worker exited 
+with code: 1 and signal: null

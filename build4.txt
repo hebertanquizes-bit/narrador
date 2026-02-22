@@ -1,0 +1,44 @@
+﻿
+> narrador@0.1.0 build
+> next build
+
+  Ôû▓ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ Ô£ô Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/8) ...
+   Generating static pages (2/8) 
+   Generating static pages (4/8) 
+   Generating static pages (6/8) 
+ Ô£ô Generating static pages (8/8)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                               Size     First Load JS
+Ôöî Ôùï /                                     5 kB            147 kB
+Ôö£ Ôùï /_not-found                           873 B          88.2 kB
+Ôö£ ãÆ /api/narrate                          0 B                0 B
+Ôö£ ãÆ /auth/callback                        0 B                0 B
+Ôö£ Ôùï /dashboard                            5.97 kB         158 kB
+Ôö£ ãÆ /sala/[id]                            14.8 kB         166 kB
+Ôöö Ôùï /workspace                            5.48 kB         157 kB
++ First Load JS shared by all             87.3 kB
+  Ôö£ chunks/117-304226a4e6d46779.js        31.7 kB
+  Ôö£ chunks/fd9d1056-8b18fc9dcae3a0fc.js   53.6 kB
+  Ôöö other shared chunks (total)           1.95 kB
+
+Route (pages)                             Size     First Load JS
+ÔöÇ ãÆ /api/test                             0 B              81 kB
++ First Load JS shared by all             81 kB
+  Ôö£ chunks/framework-f66176bb897dc684.js  44.8 kB
+  Ôö£ chunks/main-fee2816e08025219.js       34.2 kB
+  Ôöö other shared chunks (total)           1.93 kB
+
+ãÆ Middleware                              74.4 kB
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+

@@ -21,7 +21,7 @@ import GameChat from "@/components/GameChat";
 export default function SalaPage() {
   const params = useParams();
   const router = useRouter();
-  const roomId = params.id as string;
+  const roomId = params?.id as string;
   const { user, loading: authLoading } = useAuth();
   const [room, setRoom] = useState<Room | undefined | null>(undefined); // undefined = loading, null = not found
 

@@ -1,0 +1,51 @@
+﻿
+> narrador@0.1.0 build
+> next build
+
+  Ôû▓ Next.js 14.2.35
+  - Environments: .env.local
+
+   Creating an optimized production build ...
+ Ô£ô Compiled successfully
+   Linting and checking validity of types ...
+node.exe : Failed to compile.
+No linha:1 caractere:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo          : 
+    NotSpecified: (Failed to  
+   compile.:String) [], Rem   
+ oteException
+    + FullyQualifiedErrorId : 
+    NativeCommandError
+ 
+
+./src/lib/supabase/index.ts:25
+:5
+Type error: Module '"./auth"' 
+has no exported member 
+'updateProfile'.
+
+[0m [90m 23 |[39m     
+logout[33m,[39m[0m
+[0m [90m 24 |[39m     onAut
+hStateChange[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 
+25 |[39m     
+updateProfile[33m,[39m[0m
+[0m [90m    |[39m     
+[31m[1m^[22m[39m[0m
+[0m [90m 26 |[39m     choos
+eWorkspaceType[33m,[39m[0m
+[0m [90m 27 |[39m     ensur
+ePlayerRole[33m,[39m[0m
+[0m [90m 28 |[39m } 
+[36mfrom[39m 
+[32m'./auth'[39m[0m
+Next.js build worker exited 
+with code: 1 and signal: null

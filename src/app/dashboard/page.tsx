@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, DoorOpen, Hash, X, Trash2, Wand2, Shield } from "lucide-react";
+import { Plus, DoorOpen, Hash, X, Trash2, Wand2, Shield, Library, Lock, Beer } from "lucide-react";
 import {
   getRooms,
   createRoom,
@@ -17,7 +17,7 @@ import DashboardNav from "@/components/DashboardNav";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, loading, isNarrator } = useAuth();
+  const { user, loading, isNarrator, debugContext } = useAuth();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState("");
@@ -95,7 +95,7 @@ export default function DashboardPage() {
   if (loading || !user) {
     return (
       <main className="min-h-screen flex items-center justify-center p-4">
-        <p className="text-rpg-muted">Carregando...</p>
+        <p className="text-rpg-muted animate-pulse">Carregando...</p>
       </main>
     );
   }
@@ -161,6 +161,40 @@ export default function DashboardPage() {
                 Entrar na Sala
               </button>
             </form>
+          </div>
+
+          {/* Entrar no Workspace */}
+          <div className="panel flex flex-col items-start justify-between">
+            <div className="w-full">
+              <h2 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
+                <Library className="h-5 w-5 text-rpg-gold" />
+                Meu Workspace
+              </h2>
+              <p className="text-sm text-rpg-muted mb-4">
+                Acesse seu acervo pessoal de PDFs, imagens e gerencie suas referências.
+              </p>
+            </div>
+            <Link href="/workspace" className="btn-primary w-full flex items-center justify-center gap-2 mt-auto">
+              <Library className="h-4 w-4" />
+              Acessar Workspace
+            </Link>
+          </div>
+
+          {/* Taverna */}
+          <div className="panel flex flex-col items-start justify-between border-dashed border-rpg-muted/30 opacity-70">
+            <div className="w-full">
+              <h2 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
+                <Beer className="h-5 w-5 text-yellow-600" />
+                A Taverna
+              </h2>
+              <p className="text-sm text-rpg-muted mb-4">
+                Encontre novos jogadores e campanhas. Expanda sua jornada. (Em breve)
+              </p>
+            </div>
+            <button disabled className="btn-secondary w-full flex items-center justify-center gap-2 mt-auto cursor-not-allowed opacity-50">
+              <Lock className="h-4 w-4" />
+              Em Breve
+            </button>
           </div>
         </div>
 
@@ -296,6 +330,6 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-    </main>
+    </main >
   );
 }
