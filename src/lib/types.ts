@@ -71,3 +71,25 @@ export type RoomState = {
   refinementAnswers: string[];
   introGenerated: boolean;
 };
+
+export type SystemTemplate = {
+  id: string;
+  name: string;
+  version: string;
+  isBuiltIn: boolean;
+  attributes: string[];
+  skills: string[];
+  spellLevels: number[];
+  combatRules: {
+    initiativeFormula: string;
+    actionEconomy: string;
+    armorClasses: number[];
+  };
+};
+
+export type GameSystem = {
+  id: string;
+  name: string;
+  isBuiltIn: boolean;
+  template: SystemTemplate;
+};

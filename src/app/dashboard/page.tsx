@@ -177,6 +177,8 @@ export default function DashboardPage() {
                     setRoomName("");
                   }}
                   className="text-rpg-muted hover:text-rpg-light transition"
+                  title="Fechar"
+                  aria-label="Fechar"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -233,6 +235,8 @@ export default function DashboardPage() {
                 <button
                   onClick={() => setDeleteConfirm(null)}
                   className="text-rpg-muted hover:text-rpg-light transition"
+                  title="Fechar"
+                  aria-label="Fechar"
                 >
                   <X className="h-5 w-5" />
                 </button>

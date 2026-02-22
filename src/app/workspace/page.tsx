@@ -162,7 +162,7 @@ export default function WorkspacePage() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const fileContent = e.target?.result as string;
-        
+
         // Create new asset object
         const newAsset: Asset = {
           _id: 'asset_' + Date.now(),
@@ -222,14 +222,14 @@ export default function WorkspacePage() {
     if (!deleteAssetId) return;
 
     console.log('Confirmando delete de asset:', deleteAssetId);
-    
+
     try {
       console.log('Assets antes:', assets);
-      
+
       // Remove from assets array
       const updatedAssets = assets.filter(a => a._id !== deleteAssetId);
       console.log('Assets depois do filtro:', updatedAssets);
-      
+
       // Update state FIRST
       setAssets(updatedAssets);
 
@@ -241,21 +241,21 @@ export default function WorkspacePage() {
         };
         console.log('Salvando workspace:', updatedWorkspace);
         setWorkspace(updatedWorkspace);
-        
+
         // Get user ID for proper key
         const user = JSON.parse(localStorage.getItem('narrador_user') || '{}');
         const workspaceKey = `narrador_workspace_${user.id}`;
-        
+
         // Save IMMEDIATELY to localStorage
         const serialized = JSON.stringify(updatedWorkspace);
         localStorage.setItem(workspaceKey, serialized);
         console.log('Workspace salvo no localStorage:', workspaceKey);
-        
+
         // Verify it was saved
         const saved = localStorage.getItem(workspaceKey);
         console.log('Verificando localStorage:', JSON.parse(saved || '{}'));
       }
-      
+
       setError(null);
       setShowDeleteModal(false);
       setDeleteAssetId(null);
@@ -290,7 +290,11 @@ export default function WorkspacePage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/dashboard">
-              <button className="p-2 hover:bg-rpg-gold/10 rounded transition-colors">
+              <button
+                className="p-2 hover:bg-rpg-gold/10 rounded transition-colors"
+                title="Voltar"
+                aria-label="Voltar"
+              >
                 <ArrowLeft className="w-5 h-5 text-rpg-gold" />
               </button>
             </Link>
@@ -351,6 +355,8 @@ export default function WorkspacePage() {
                   <button
                     onClick={() => handleDeleteAsset(asset._id)}
                     className="p-1 hover:bg-red-500/20 rounded transition-colors text-red-400 hover:text-red-300"
+                    title="Excluir"
+                    aria-label="Excluir"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -437,6 +443,8 @@ export default function WorkspacePage() {
                   value={newAssetType}
                   onChange={e => setNewAssetType(e.target.value)}
                   className="w-full bg-rpg-dark border border-rpg-light/20 rounded px-3 py-2 text-rpg-light focus:outline-none focus:border-rpg-gold"
+                  title="Tipo de Asset"
+                  aria-label="Tipo de Asset"
                 >
                   <option value="adventure">Aventura</option>
                   <option value="bestiary">Bestiário</option>
@@ -497,7 +505,7 @@ export default function WorkspacePage() {
             <p className="text-rpg-light mb-6">
               Tem certeza que deseja deletar este asset? Esta ação não pode ser desfeita.
             </p>
-            
+
             <div className="flex gap-3">
               <button
                 onClick={cancelDeleteAsset}

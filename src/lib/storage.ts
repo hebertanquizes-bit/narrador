@@ -15,6 +15,7 @@ export const STORAGE_KEYS = {
   AI_PROVIDER: `${PREFIX}ai_provider`,
   AI_MODEL: `${PREFIX}ai_model`,
   ROOM_STATE: `${PREFIX}room_state`,
+  GAME_SYSTEMS: `${PREFIX}game_systems`,
 } as const;
 
 export function getItem<T>(key: string): T | null {

@@ -147,11 +147,10 @@ export function CoNarratorChat({
             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-xs px-4 py-2 rounded ${
-                msg.role === 'user'
+              className={`max-w-xs px-4 py-2 rounded ${msg.role === 'user'
                   ? 'bg-rpg-accent text-rpg-dark'
                   : 'bg-rpg-darker border border-rpg-gold text-rpg-light'
-              }`}
+                }`}
             >
               <p className="text-sm">{msg.content}</p>
               <p className="text-xs opacity-70 mt-1">
@@ -178,25 +177,33 @@ export function CoNarratorChat({
         <div className="bg-rpg-darker p-4 border-t border-rpg-accent space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm text-rpg-light">Party Level</label>
+              <label htmlFor="encounterLevel" className="text-sm text-rpg-light">Party Level</label>
               <input
+                id="encounterLevel"
                 type="number"
                 min="1"
                 max="20"
                 value={encounterLevel}
                 onChange={(e) => setEncounterLevel(parseInt(e.target.value))}
                 className="w-full bg-rpg-dark text-rpg-light border border-rpg-accent rounded px-2 py-1 text-sm"
+                title="Party Level"
+                aria-label="Party Level"
+                placeholder="1"
               />
             </div>
             <div>
-              <label className="text-sm text-rpg-light">Party Size</label>
+              <label htmlFor="partySize" className="text-sm text-rpg-light">Party Size</label>
               <input
+                id="partySize"
                 type="number"
                 min="1"
                 max="8"
                 value={partySize}
                 onChange={(e) => setPartySize(parseInt(e.target.value))}
                 className="w-full bg-rpg-dark text-rpg-light border border-rpg-accent rounded px-2 py-1 text-sm"
+                title="Party Size"
+                aria-label="Party Size"
+                placeholder="1"
               />
             </div>
           </div>
@@ -231,6 +238,8 @@ export function CoNarratorChat({
             type="submit"
             disabled={loading || !input.trim()}
             className="bg-rpg-accent text-rpg-dark p-2 rounded hover:opacity-90 disabled:opacity-50"
+            title="Send Message"
+            aria-label="Send Message"
           >
             <Send size={18} />
           </button>

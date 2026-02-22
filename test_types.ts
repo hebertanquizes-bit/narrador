@@ -1,0 +1,1 @@
+import { createBrowserClient } from '@supabase/ssr'; import { Database } from './src/lib/supabase/types'; const client = createBrowserClient<Database>('', ''); const a = client.from('profiles');
