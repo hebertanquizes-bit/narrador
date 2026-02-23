@@ -32,10 +32,8 @@ export async function middleware(request: NextRequest) {
   // ─── Rotas públicas ─────────
   const publicRoutes = ['/', '/auth/callback', '/auth/confirm']
   if (publicRoutes.includes(pathname)) {
-    if (user && pathname === '/') {
-      // Usuário logado tentando acessar a tela de login → redirecionar
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
+    // Permitir que o usuário acesse a raiz para fazer logout se desejar
+    // O redirecionamento será tratado (ou oferecido) pela própria página
     return supabaseResponse
   }
 
