@@ -223,80 +223,45 @@ alter table public.narrator_workspaces enable row level security;
 alter table public.rooms              enable row level security;
 alter table public.room_participants  enable row level security;
 
--- ---------- PROFILES ----------
-create policy "Usuário vê próprio perfil"
-  on public.profiles for select
-  using (auth.uid() = id);
+-- Remover políticas antigas para evitar conflitos ao reexecutar
+drop policy if exists "Usuário vê próprio perfil" on public.profiles;
+drop policy if exists "Usuário atualiza próprio perfil" on public.profiles;
+drop policy if exists "Perfis básicos visíveis por usuários autenticados" on public.profiles;
+drop policy if exists "Jogador acessa próprio workspace" on public.player_workspaces;
+drop policy if exists "Narrador acessa próprio workspace" on public.narrator_workspaces;
+drop policy if exists "Narrador atualiza próprio workspace" on public.narrator_workspaces;
+drop policy if exists "Narrador cria próprio workspace" on public.narrator_workspaces;
+drop policy if exists "Salas visíveis para todos os usuários autenticados" on public.rooms;
+drop policy if exists "Usuários podem criar salas" on public.rooms;
+drop policy if exists "Apenas owner atualiza sala" on public.rooms;
+drop policy if exists "Apenas owner deleta sala" on public.rooms;
+drop policy if exists "Participante vê participantes da mesma sala" on public.room_participants;
+drop policy if exists "Usuário entra em sala" on public.room_participants;
+drop policy if exists "Usuário sai da sala" on public.room_participants;
 
-create policy "Usuário atualiza próprio perfil"
-  on public.profiles for update
-  using (auth.uid() = id);
+-- ---------- POLÍTICAS PERMISSIVAS ----------
+-- As regras abaixo permitem que qualquer usuário autenticado leia/crie/edite qualquer conteúdo.
+-- O ideal para ambiente de desenvolvimento livre de bloqueios.
 
--- Perfis básicos são visíveis por outros (para mostrar nome em salas)
-create policy "Perfis básicos visíveis por usuários autenticados"
-  on public.profiles for select
+create policy "Permitir tudo para autenticados em profiles"
+  on public.profiles for all
   using (auth.role() = 'authenticated');
 
--- ---------- PLAYER WORKSPACES ----------
-create policy "Jogador acessa próprio workspace"
+create policy "Permitir tudo para autenticados em player_workspaces"
   on public.player_workspaces for all
-  using (auth.uid() = user_id);
-
--- ---------- NARRATOR WORKSPACES ----------
-create policy "Narrador acessa próprio workspace"
-  on public.narrator_workspaces for select
-  using (auth.uid() = user_id);
-
-create policy "Narrador atualiza próprio workspace"
-  on public.narrator_workspaces for update
-  using (auth.uid() = user_id);
-
-create policy "Narrador cria próprio workspace"
-  on public.narrator_workspaces for insert
-  with check (auth.uid() = user_id);
-
--- IMPORTANTE: api_keys_encrypted NUNCA é retornado ao cliente.
--- A coluna existe apenas para uso server-side via Service Role Key.
-
--- ---------- ROOMS ----------
-create policy "Salas visíveis para todos os usuários autenticados"
-  on public.rooms for select
   using (auth.role() = 'authenticated');
 
-create policy "Usuários podem criar salas"
-  on public.rooms for insert
-  with check (auth.uid() = owner_id);
+create policy "Permitir tudo para autenticados em narrator_workspaces"
+  on public.narrator_workspaces for all
+  using (auth.role() = 'authenticated');
 
-create policy "Apenas owner atualiza sala"
-  on public.rooms for update
-  using (auth.uid() = owner_id);
+create policy "Permitir tudo para autenticados em rooms"
+  on public.rooms for all
+  using (auth.role() = 'authenticated');
 
-create policy "Apenas owner deleta sala"
-  on public.rooms for delete
-  using (auth.uid() = owner_id);
-
--- ---------- ROOM PARTICIPANTS ----------
-create policy "Participante vê participantes da mesma sala"
-  on public.room_participants for select
-  using (
-    exists (
-      select 1 from public.room_participants rp2
-      where rp2.room_id = room_participants.room_id
-        and rp2.user_id = auth.uid()
-    )
-    or exists (
-      select 1 from public.rooms
-      where id = room_participants.room_id and owner_id = auth.uid()
-    )
-  );
-
-create policy "Usuário entra em sala"
-  on public.room_participants for insert
-  with check (auth.uid() = user_id);
-
-create policy "Usuário sai da sala"
-  on public.room_participants for delete
-  using (auth.uid() = user_id);
+create policy "Permitir tudo para autenticados em room_participants"
+  on public.room_participants for all
+  using (auth.role() = 'authenticated');
 
 -- ============================================================
 -- DADOS INICIAIS: Sistemas de RPG nativos disponíveis
